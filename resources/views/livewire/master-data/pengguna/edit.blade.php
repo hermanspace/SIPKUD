@@ -39,7 +39,7 @@
                 <flux:error name="password" />
             </div>
 
-            @if($password)
+            <?php if ($password): ?>
                 <flux:input 
                     wire:model="password_confirmation" 
                     label="Konfirmasi Password Baru" 
@@ -47,9 +47,10 @@
                     placeholder="Ulangi password baru"
                 />
                 <flux:error name="password_confirmation" />
-            @endif
+            <?php endif; ?>
 
-            <flux:select wire:model.live="role" label="Role" required {{ $isAdminKecamatan ? 'disabled' : '' }}>
+            <label class="flux-label block text-sm font-medium text-zinc-700 dark:text-zinc-300">Role</label>
+            <select wire:model.live="role" required {{ $isAdminKecamatan ? 'disabled' : '' }} class="flux-input block w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white">
                 @if(!$isAdminKecamatan)
                     <option value="super_admin">Super Admin</option>
                     <option value="admin_kecamatan">Admin Kecamatan</option>
@@ -58,37 +59,39 @@
                 @if(!$isAdminKecamatan)
                     <option value="executive_view">Executive View</option>
                 @endif
-            </flux:select>
-            <flux:error name="role" />
+            </select>
+            @error('role')<p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
             @if($isAdminKecamatan)
-                <flux:text class="text-xs text-zinc-500">
-                    Anda hanya dapat mengubah menjadi Admin Desa
-                </flux:text>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">Anda hanya dapat mengubah menjadi Admin Desa.</p>
             @endif
 
+            @php
+            $showDesaSelect = $kecamatan_id && $role !== 'admin_kecamatan';
+            @endphp
             @if($role !== 'super_admin')
-                <flux:select wire:model.live="kecamatan_id" label="Kecamatan" required {{ $isAdminKecamatan ? 'disabled' : '' }}>
+            <div class="space-y-4">
+                <label class="flux-label block text-sm font-medium text-zinc-700 dark:text-zinc-300">Kecamatan</label>
+                <select wire:model.live="kecamatan_id" {{ $isAdminKecamatan ? 'disabled' : '' }} required class="flux-input block w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white">
                     <option value="">Pilih Kecamatan</option>
                     @foreach($kecamatan as $kec)
                         <option value="{{ $kec->id }}">{{ $kec->nama_kecamatan }}</option>
                     @endforeach
-                </flux:select>
-                <flux:error name="kecamatan_id" />
+                </select>
+                @error('kecamatan_id')<p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                 @if($isAdminKecamatan)
-                    <flux:text class="text-xs text-zinc-500">
-                        Kecamatan sudah ditetapkan berdasarkan akun Anda
-                    </flux:text>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Kecamatan sudah ditetapkan berdasarkan akun Anda.</p>
                 @endif
-
-                @if($kecamatan_id && $role !== 'admin_kecamatan')
-                    <flux:select wire:model="desa_id" label="Desa" required>
-                        <option value="">Pilih Desa</option>
-                        @foreach($desa as $d)
-                            <option value="{{ $d->id }}">{{ $d->nama_desa }}</option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="desa_id" />
+                @if($showDesaSelect)
+                <label class="flux-label block text-sm font-medium text-zinc-700 dark:text-zinc-300">Desa</label>
+                <select wire:model="desa_id" required class="flux-input block w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white">
+                    <option value="">Pilih Desa</option>
+                    @foreach($desa as $d)
+                        <option value="{{ $d->id }}">{{ $d->nama_desa }}</option>
+                    @endforeach
+                </select>
+                @error('desa_id')<p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
                 @endif
+            </div>
             @endif
 
             <div class="flex items-center gap-4">
