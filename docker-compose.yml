@@ -1,0 +1,90 @@
+# SIPKUD Laravel - Production Docker Compose
+# Connects to existing: postgres-db, redis-cache (backend), Nginx Proxy Manager (frontend)
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sipkud-app:latest
+    container_name: sipkud-app
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - .:/var/www/html
+      - sipkud-storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - REDIS_HOST=redis-cache
+      - REDIS_PORT=6379
+      - CACHE_STORE=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    env_file:
+      - .env
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  queue:
+    image: sipkud-app:latest
+    container_name: sipkud-queue
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - sipkud-storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - REDIS_HOST=redis-cache
+      - QUEUE_CONNECTION=redis
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - app
+
+  scheduler:
+    image: sipkud-app:latest
+    container_name: sipkud-scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "while true; do php artisan schedule:run --no-interaction & sleep 60; done"
+    volumes:
+      - .:/var/www/html
+      - sipkud-storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - REDIS_HOST=redis-cache
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - app
+
+volumes:
+  sipkud-storage:
+
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
