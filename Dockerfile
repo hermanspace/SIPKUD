@@ -1,30 +1,5 @@
 # =============================================================================
-# Stage 1: Node - Build Vite / frontend assets
-# =============================================================================
-FROM node:20-alpine AS node
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json package-lock.json* ./
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Install dependencies (including optional Linux binaries for Vite/Tailwind)
-RUN npm ci
-
-# Copy frontend source (Tailwind 4 config is in CSS / Vite plugin)
-COPY vite.config.js ./
-COPY resources ./resources
-
-# Copy Laravel files needed for Vite (public index, manifest placeholder)
-COPY public ./public
-
-# Build production assets
-RUN npm run build
-
-# =============================================================================
-# Stage 2: Composer - Install PHP dependencies
+# Stage 1: Composer - Install PHP dependencies (must run before node for Flux CSS)
 # =============================================================================
 FROM composer:2 AS composer
 
@@ -58,6 +33,27 @@ COPY . .
 
 # Run composer scripts and generate optimized autoloader
 RUN composer dump-autoload --optimize --no-dev
+
+# =============================================================================
+# Stage 2: Node - Build Vite / frontend assets (needs vendor for Flux CSS)
+# =============================================================================
+FROM node:20-alpine AS node
+
+WORKDIR /app
+
+# Copy vendor from Composer stage (app.css imports ../../vendor/livewire/flux, etc.)
+COPY --from=composer /app/vendor ./vendor
+
+# Copy package files and install deps
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy frontend source and build
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+
+RUN npm run build
 
 # =============================================================================
 # Stage 3: Final runtime - PHP 8.3 + Apache
