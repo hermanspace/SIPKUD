@@ -60,6 +60,7 @@ FROM php:8.3-apache AS runtime
 
 # Install runtime and build deps for PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
     libpq5 \
     libzip-dev \
     libpng-dev \
