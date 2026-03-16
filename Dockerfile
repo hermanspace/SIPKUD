@@ -23,7 +23,7 @@ COPY composer.json composer.lock* ./
 # Flux Pro: set COMPOSER_AUTH in .env (compose passes as build arg)
 ARG COMPOSER_AUTH
 RUN export COMPOSER_AUTH="$COMPOSER_AUTH" && composer install \
-
+    --no-dev \
     --no-scripts \
     --no-autoloader \
     --prefer-dist \
@@ -31,8 +31,8 @@ RUN export COMPOSER_AUTH="$COMPOSER_AUTH" && composer install \
 
 COPY . .
 
-# Run composer scripts and generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev
+# Generate optimized autoloader (--no-scripts: skip package:discover which requires dev deps like Pail)
+RUN composer dump-autoload --optimize --no-dev --no-scripts
 
 # =============================================================================
 # Stage 2: Node - Build Vite / frontend assets (needs vendor for Flux CSS)
