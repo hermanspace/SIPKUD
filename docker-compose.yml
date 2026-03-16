@@ -85,10 +85,11 @@ services:
 volumes:
   sipkud-storage:
 
-# Required for Flux Pro: auth.json (excluded from image via .dockerignore)
+# Flux Pro auth: use COMPOSER_AUTH from .env (production) or auth.json (local)
+# Production: add to .env → COMPOSER_AUTH={"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}
 secrets:
   composer_auth:
-    file: auth.json
+    environment: "COMPOSER_AUTH"
 
 networks:
   frontend:
