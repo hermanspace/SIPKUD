@@ -5,6 +5,8 @@ services:
   app:
     build:
       context: .
+      args:
+        COMPOSER_AUTH: ${COMPOSER_AUTH}
       dockerfile: Dockerfile
     image: sipkud-app:latest
     container_name: sipkud-app

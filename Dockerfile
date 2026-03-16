@@ -44,8 +44,8 @@ RUN apk add --no-cache \
 COPY composer.json composer.lock* ./
 
 # For private Flux Pro repo: set COMPOSER_AUTH in build or at runtime
-# ARG COMPOSER_AUTH
-# ENV COMPOSER_AUTH=${COMPOSER_AUTH}
+ARG COMPOSER_AUTH
+ENV COMPOSER_AUTH=${COMPOSER_AUTH}
 
 RUN composer install \
     --no-dev \
