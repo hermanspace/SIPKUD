@@ -147,7 +147,7 @@
                         </div>
                     @endif
                     <flux:input 
-                        wire:model="logo_instansi" 
+                        wire:model.live="logo_instansi" 
                         type="file"
                         accept="image/jpeg,image/png,image/gif,image/webp"
                         label="Upload Logo Baru"
@@ -183,7 +183,7 @@
                         </div>
                     @endif
                     <flux:input 
-                        wire:model="favicon" 
+                        wire:model.live="favicon" 
                         type="file"
                         accept="image/jpeg,image/png,image/gif,image/x-icon,image/vnd.microsoft.icon"
                         label="Upload Favicon Baru"
