@@ -118,12 +118,22 @@ COPY --from=composer /app /var/www/html
 # Copy built assets from node stage
 COPY --from=node /app/public/build /var/www/html/public/build
 
-# Ensure storage and bootstrap/cache exist and are writable
+# Ensure storage and bootstrap/cache exist (incl. upload dirs for logo/favicon & Livewire temp)
 RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache/data} \
     /var/www/html/storage/logs \
+    /var/www/html/storage/app/public \
+    /var/www/html/storage/app/private \
     /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# PHP upload limits (logo max 2MB, Livewire temp)
+RUN echo "upload_max_filesize=10M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size=12M" >> /usr/local/etc/php/conf.d/uploads.ini
+
+# Entrypoint: fix permissions, storage:link, then start Apache
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Prefer production php.ini if present
 RUN if [ -f "$PHP_INI_DIR/php.ini-production" ]; then \
@@ -135,5 +145,6 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
-# Apache runs as PID 1
+# Entrypoint: fix permissions + storage:link; CMD default = Apache (overridden by queue/scheduler)
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["apache2-foreground"]

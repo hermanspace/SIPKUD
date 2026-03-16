@@ -168,13 +168,21 @@ If NPM is not on the same Docker network as the app, either:
 
 ---
 
-## 9. File permissions
+## 9. File permissions and logo upload
 
-The image sets ownership of `storage` and `bootstrap/cache` to `www-data` and mode `775`. If you see permission errors:
+The image entrypoint fixes permissions on startup and creates `storage:link` if needed. If logo/favicon upload still fails:
 
 ```bash
+# Fix permissions manually
 docker compose exec app chown -R www-data:www-data storage bootstrap/cache
 docker compose exec app chmod -R 775 storage bootstrap/cache
+
+# Create storage symlink (required for asset('storage/...'))
+docker compose exec app php artisan storage:link
+
+# Ensure upload directories exist
+docker compose exec app mkdir -p storage/app/public/pengaturan storage/app/private/livewire-tmp
+docker compose exec app chown -R www-data:www-data storage
 ```
 
 ---
