@@ -41,7 +41,7 @@ RUN apk add --no-cache \
     freetype
 
 # Copy composer files first for better layer caching
-COPY composer.json composer.lock* ./
+COPY composer.json composer.lock* auth.json ./
 
 # For private Flux Pro repo: set COMPOSER_AUTH in build or at runtime
 ARG COMPOSER_AUTH
