@@ -3,6 +3,7 @@ set -e
 
 # Ensure storage directories exist (required for uploads: logo, Livewire temp)
 mkdir -p /var/www/html/storage/app/public/pengaturan
+mkdir -p /var/www/html/storage/app/public/livewire-tmp
 mkdir -p /var/www/html/storage/app/private/livewire-tmp
 mkdir -p /var/www/html/storage/framework/{sessions,views,cache/data}
 mkdir -p /var/www/html/storage/logs

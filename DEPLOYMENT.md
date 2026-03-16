@@ -145,6 +145,28 @@ If NPM is not on the same Docker network as the app, either:
 - Attach the NPM container to the `frontend` network, or  
 - Use the host IP and the **published** port of the app (e.g. `host:32800` if Compose mapped `32800:80`). Prefer using the same network and `sipkud-app:80`.
 
+### 6.1. Logo/File upload – NPM client_max_body_size (penting)
+
+Jika upload logo gagal dengan pesan **"The logo_instansi failed to upload"**, Nginx Proxy Manager biasanya membatasi ukuran request body ke 1MB. Perlu ditambah:
+
+1. Buka **Proxy Host** untuk `sipkud2026.trust-idn.id` di NPM
+2. Tab **Custom locations** → **Add location**
+   - Location: `/`
+   - Proxy pass: (sesuai proxy host)
+   - Di **Advanced** → **Custom Nginx Configuration** tambahkan:
+
+```nginx
+client_max_body_size 10M;
+```
+
+3. Jika tidak pakai Custom locations, gunakan **Edit Proxy Host** → tab **Advanced** → **Custom Nginx Configuration**:
+
+```nginx
+client_max_body_size 10M;
+```
+
+4. Simpan dan reload NPM
+
 ---
 
 ## 7. Verify
