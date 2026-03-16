@@ -55,8 +55,7 @@
     </div>
 
     <flux:card class="p-6">
-        <form wire:submit="update" class="space-y-6">
-            <div class="grid gap-6 md:grid-cols-2">
+    <form wire:submit="update" enctype="multipart/form-data" class="space-y-6">            <div class="grid gap-6 md:grid-cols-2">
                 <flux:input 
                     wire:model="nama_instansi" 
                     label="Nama Instansi" 
