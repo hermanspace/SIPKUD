@@ -48,8 +48,6 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY vite.config.js ./
-COPY postcss.config.js ./
-COPY tailwind.config.js ./
 
 COPY resources ./resources
 COPY public ./public
