@@ -23,7 +23,7 @@ COPY composer.json composer.lock* ./
 # Flux Pro: set COMPOSER_AUTH in .env (compose passes as build arg)
 ARG COMPOSER_AUTH
 RUN export COMPOSER_AUTH="$COMPOSER_AUTH" && composer install \
-    --no-dev \
+
     --no-scripts \
     --no-autoloader \
     --prefer-dist \
