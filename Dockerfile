@@ -18,11 +18,9 @@ RUN apk add --no-cache \
 # Copy composer files first for better layer caching
 COPY composer.json composer.lock* ./
 
-# Flux Pro private repo: pass auth via BuildKit secret (keeps credentials out of layers)
-# Use: docker build --secret id=composer_auth,src=auth.json ...
-# Or: docker compose build (with build.secrets in docker-compose.yml)
-RUN --mount=type=secret,id=composer_auth,target=/root/.composer/auth.json \
-    composer install \
+# Flux Pro: set COMPOSER_AUTH in .env (compose passes as build arg)
+ARG COMPOSER_AUTH
+RUN export COMPOSER_AUTH="$COMPOSER_AUTH" && composer install \
     --no-dev \
     --no-scripts \
     --no-autoloader \

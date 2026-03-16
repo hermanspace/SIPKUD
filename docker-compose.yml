@@ -6,8 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      secrets:
-        - composer_auth
+      args:
+        COMPOSER_AUTH: ${COMPOSER_AUTH}
     image: sipkud-app:latest
     container_name: sipkud-app
     restart: unless-stopped
@@ -85,11 +85,8 @@ services:
 volumes:
   sipkud-storage:
 
-# Flux Pro auth: use COMPOSER_AUTH from .env (production) or auth.json (local)
-# Production: add to .env → COMPOSER_AUTH={"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}
-secrets:
-  composer_auth:
-    environment: "COMPOSER_AUTH"
+# Add COMPOSER_AUTH to .env for Flux Pro (used as build arg)
+# Format: COMPOSER_AUTH={"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}
 
 networks:
   frontend:
