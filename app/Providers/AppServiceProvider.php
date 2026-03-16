@@ -24,9 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Memaksa skema URL ke HTTPS di production untuk mencegah mixed content (di belakang proxy/SSL termination).
-        if ($this->app->environment('production')) {
+       
             URL::forceScheme('https');
-        }
+        
 
         // Define gates for role-based access
         Gate::define('super_admin', function ($user) {
