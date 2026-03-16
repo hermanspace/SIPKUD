@@ -1,5 +1,7 @@
 # SIPKUD Laravel - Production Docker Compose
-# Connects to existing: postgres-db, redis-cache (backend), Nginx Proxy Manager (frontend)
+# - Database & Redis: handled by server infrastructure (postgres-db, redis-cache)
+# - Networks: frontend (NPM), backend (postgres, redis)
+# - Tidak ada service database di sini; connect ke existing postgres-db
 
 services:
   app:
@@ -45,6 +47,7 @@ services:
     restart: unless-stopped
     command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
     volumes:
+    
       - sipkud-storage:/var/www/html/storage
     environment:
       - APP_ENV=production
@@ -85,8 +88,8 @@ services:
 volumes:
   sipkud-storage:
 
-# Add COMPOSER_AUTH to .env for Flux Pro (used as build arg)
-# Format: COMPOSER_AUTH={"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}
+# COMPOSER_AUTH di .env untuk build (Flux Pro)
+# Format: COMPOSER_AUTH='{"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}'
 
 networks:
   frontend:

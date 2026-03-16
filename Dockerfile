@@ -1,3 +1,5 @@
+# SIPKUD Laravel - Production Dockerfile
+# PHP 8.3 + Apache, pdo_pgsql, Redis. Database via external postgres-db (server infra).
 # =============================================================================
 # Stage 1: Composer - Install PHP dependencies (must run before node for Flux CSS)
 # =============================================================================
