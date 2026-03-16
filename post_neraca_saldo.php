@@ -18,7 +18,7 @@ echo "🔍 Mencari jurnal yang sudah posted...\n\n";
 
 // Ambil semua jurnal posted, group by desa_id dan periode
 $jurnals = Jurnal::where('status', 'posted')
-    ->select('desa_id', DB::raw("DATE_FORMAT(tanggal_transaksi, '%Y-%m') as periode"))
+    ->select('desa_id', DB::raw(\App\Support\DbCompat::dateFormatPeriod('tanggal_transaksi') . ' as periode'))
     ->distinct()
     ->get();
 
@@ -39,7 +39,8 @@ foreach ($jurnals as $item) {
     // Cek jumlah jurnal untuk periode ini
     $countJurnal = Jurnal::where('desa_id', $desaId)
         ->where('status', 'posted')
-        ->whereRaw("DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?", [$periode])
+        ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
+        ->whereMonth('tanggal_transaksi', substr($periode, 5, 2))
         ->count();
     
     echo sprintf(
@@ -66,7 +67,8 @@ foreach ($jurnals as $item) {
         $unitUsahas = DB::table('jurnal')
             ->where('desa_id', $desaId)
             ->where('status', 'posted')
-            ->whereRaw("DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?", [$periode])
+            ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
+            ->whereMonth('tanggal_transaksi', substr($periode, 5, 2))
             ->whereNotNull('unit_usaha_id')
             ->distinct()
             ->pluck('unit_usaha_id');

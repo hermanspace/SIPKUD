@@ -98,8 +98,9 @@ return new class extends Migration
             $table->dropUnique(['kode_akun']);
         });
 
+        // Add desa_id (after() ignored on PostgreSQL - column order doesn't affect functionality)
         Schema::table('akun', function (Blueprint $table) {
-            $table->foreignId('desa_id')->after('id')->nullable()->constrained('desa')->onDelete('cascade');
+            $table->foreignId('desa_id')->nullable()->constrained('desa')->onDelete('cascade');
         });
 
         // Set desa_id ke desa pertama untuk data yang ada (fallback)
@@ -108,8 +109,15 @@ return new class extends Migration
             DB::table('akun')->whereNull('desa_id')->update(['desa_id' => $firstDesaId]);
         }
 
+        // Set NOT NULL - driver-specific (avoid change() which requires doctrine/dbal)
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE akun ALTER COLUMN desa_id SET NOT NULL');
+        } else {
+            DB::statement('ALTER TABLE akun MODIFY desa_id BIGINT UNSIGNED NOT NULL');
+        }
+
         Schema::table('akun', function (Blueprint $table) {
-            $table->foreignId('desa_id')->nullable(false)->change();
             $table->unique(['desa_id', 'kode_akun']);
         });
     }

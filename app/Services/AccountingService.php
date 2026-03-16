@@ -365,8 +365,8 @@ class AccountingService
             'akun.kode_akun',
             'akun.nama_akun',
             'akun.tipe_akun',
-            DB::raw('SUM(CASE WHEN jurnal_detail.posisi = "debit" THEN jurnal_detail.jumlah ELSE 0 END) as total_debit'),
-            DB::raw('SUM(CASE WHEN jurnal_detail.posisi = "kredit" THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit')
+            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
+            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
         )
         ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
         ->orderBy('akun.kode_akun')
@@ -805,8 +805,8 @@ class AccountingService
             'akun.kode_akun',
             'akun.nama_akun',
             'akun.tipe_akun',
-            DB::raw('SUM(CASE WHEN jurnal_detail.posisi = "debit" THEN jurnal_detail.jumlah ELSE 0 END) as total_debit'),
-            DB::raw('SUM(CASE WHEN jurnal_detail.posisi = "kredit" THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit')
+            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
+            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
         )
         ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
         ->orderBy('akun.kode_akun')
@@ -970,7 +970,8 @@ class AccountingService
             // Ambil semua jurnal posted untuk periode ini
             $jurnalQuery = Jurnal::where('desa_id', $desaId)
                 ->where('status', 'posted')
-                ->whereRaw("DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?", [$periode]);
+                ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
+                ->whereMonth('tanggal_transaksi', substr($periode, 5, 2));
             
             if ($unitUsahaId) {
                 $jurnalQuery->where('unit_usaha_id', $unitUsahaId);
@@ -1011,7 +1012,8 @@ class AccountingService
         // Validasi tidak ada jurnal draft di periode ini
         $hasDraft = Jurnal::where('desa_id', $desaId)
             ->where('status', 'draft')
-            ->whereRaw("DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?", [$periode])
+            ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
+            ->whereMonth('tanggal_transaksi', substr($periode, 5, 2))
             ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
             ->exists();
 

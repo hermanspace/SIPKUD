@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -12,9 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Modify the enum to include admin_kecamatan
-        // Note: MySQL doesn't support ALTER ENUM directly, so we need to use raw SQL
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            $this->alterCheckConstraintPgsql(
+                'users',
+                'role',
+                ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view']
+            );
+        } else {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
+        }
     }
 
     /**
@@ -22,7 +29,25 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to original enum values
-        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            $this->alterCheckConstraintPgsql(
+                'users',
+                'role',
+                ['super_admin', 'admin_desa', 'executive_view']
+            );
+        } else {
+            DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
+        }
+    }
+
+    private function alterCheckConstraintPgsql(string $table, string $column, array $values): void
+    {
+        $constraintName = "{$table}_{$column}_check";
+        $valuesList = implode("', '", array_map(fn ($v) => addslashes($v), $values));
+
+        DB::statement("ALTER TABLE {$table} DROP CONSTRAINT IF EXISTS {$constraintName}");
+        DB::statement("ALTER TABLE {$table} ADD CONSTRAINT {$constraintName} CHECK ({$column} IN ('{$valuesList}'))");
     }
 };
