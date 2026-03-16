@@ -64,7 +64,7 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => 'public',    // storage/app/public - sama dengan lokasi logo akhir
+        'disk' => 'local',    // storage/app/public - sama dengan lokasi logo akhir
         'rules' => ['nullable', 'file', 'image', 'max:2048'], // 2MB untuk logo
         'directory' => 'livewire-tmp',
         'middleware' => null,  // Example: 'throttle:5,1'             | Default: 'throttle:60,1'
