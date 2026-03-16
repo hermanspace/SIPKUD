@@ -41,15 +41,16 @@ FROM node:20-alpine AS node
 
 WORKDIR /app
 
-# Copy vendor from Composer stage (app.css imports ../../vendor/livewire/flux, etc.)
 COPY --from=composer /app/vendor ./vendor
 
-# Copy package files and install deps
 COPY package.json package-lock.json* ./
+
 RUN npm ci
 
-# Copy frontend source and build
 COPY vite.config.js ./
+COPY postcss.config.js ./
+COPY tailwind.config.js ./
+
 COPY resources ./resources
 COPY public ./public
 
