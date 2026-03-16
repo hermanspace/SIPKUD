@@ -145,7 +145,15 @@ If NPM is not on the same Docker network as the app, either:
 - Attach the NPM container to the `frontend` network, or  
 - Use the host IP and the **published** port of the app (e.g. `host:32800` if Compose mapped `32800:80`). Prefer using the same network and `sipkud-app:80`.
 
-### 6.1. Logo/File upload – NPM client_max_body_size (penting)
+### 6.1. Livewire File Upload – Custom Endpoint (Cloudflare/Proxy)
+
+Aplikasi menggunakan custom Livewire upload endpoint yang tidak bergantung pada signed URL, sehingga stabil di belakang Cloudflare, Nginx Proxy Manager, atau reverse proxy lain. Upload memakai auth session + CSRF, bukan signature.
+
+- Route: `POST /livewire/upload-file` → `LivewireFileUploadController`
+- Controller: `app/Http/Controllers/LivewireFileUploadController.php`
+- Tidak perlu konfigurasi tambahan; pastikan TrustProxies dan `APP_URL` sudah benar.
+
+### 6.2. Logo/File upload – NPM client_max_body_size (penting)
 
 Jika upload logo gagal dengan pesan **"The logo_instansi failed to upload"**, Nginx Proxy Manager biasanya membatasi ukuran request body ke 1MB. Perlu ditambah:
 
@@ -166,6 +174,14 @@ client_max_body_size 10M;
 ```
 
 4. Simpan dan reload NPM
+
+### 6.2. Livewire upload (401 Unauthorized di belakang Cloudflare/proxy)
+
+Aplikasi menggunakan **custom Livewire upload endpoint** (`LivewireFileUploadController`) yang tidak bergantung pada signed URL. Ini menyelesaikan 401 Unauthorized ketika upload melewati Cloudflare dan reverse proxy.
+
+- Endpoint: `POST /livewire/upload-file`
+- Keamanan: Session auth + CSRF (web middleware), bukan signature
+- Tidak perlu konfigurasi tambahan di NPM/Cloudflare
 
 ---
 

@@ -1,11 +1,20 @@
 <?php
 
+use App\Http\Controllers\LivewireFileUploadController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+
+/*
+| Custom Livewire upload endpoint - replaces default signed URL endpoint.
+| Stabil di belakang Cloudflare/reverse proxy.
+*/
+Route::post('livewire/upload-file', LivewireFileUploadController::class)
+    ->middleware(['web', 'auth'])
+    ->name('livewire.upload-file');
 
 Route::get('/', function () {
     return view('welcome');
