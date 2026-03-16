@@ -5,9 +5,9 @@ services:
   app:
     build:
       context: .
-      args:
-        COMPOSER_AUTH: ${COMPOSER_AUTH}
       dockerfile: Dockerfile
+      secrets:
+        - composer_auth
     image: sipkud-app:latest
     container_name: sipkud-app
     restart: unless-stopped
@@ -84,6 +84,11 @@ services:
 
 volumes:
   sipkud-storage:
+
+# Required for Flux Pro: auth.json (excluded from image via .dockerignore)
+secrets:
+  composer_auth:
+    file: auth.json
 
 networks:
   frontend:
