@@ -81,6 +81,12 @@ services:
     depends_on:
       app:
         condition: service_started
+    # Container worker tidak menjalankan Apache: cek proses, bukan HTTP /up.
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'queue:work' /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   scheduler:
     image: sipkud-app:dev
@@ -102,6 +108,11 @@ services:
     depends_on:
       app:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'schedule:work' /proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   postgres:
     image: postgres:16-alpine
