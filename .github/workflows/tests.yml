@@ -15,6 +15,32 @@ jobs:
     runs-on: ubuntu-latest
     environment: Testing
 
+    # Test dijalankan terhadap PostgreSQL (paritas dengan produksi),
+    # bukan SQLite bawaan phpunit.xml. Variabel env di bawah menimpa
+    # nilai <env> phpunit.xml karena force=false.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: sipkud_test
+          POSTGRES_USER: sipkud
+          POSTGRES_PASSWORD: sipkud_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sipkud"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_DATABASE: sipkud_test
+      DB_USERNAME: sipkud
+      DB_PASSWORD: sipkud_test_password
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,7 +48,9 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.4
+          # Samakan dengan produksi (Dockerfile: php:8.3-apache)
+          php-version: '8.3'
+          extensions: bcmath, intl, pdo_pgsql, gd, zip
           tools: composer:v2
           coverage: xdebug
 
