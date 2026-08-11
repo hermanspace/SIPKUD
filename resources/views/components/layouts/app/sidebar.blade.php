@@ -67,6 +67,7 @@
                         <flux:navlist.item icon="users" :href="route('pengguna.index')" :current="request()->routeIs('pengguna.*')" wire:navigate>{{ __('Pengguna') }}</flux:navlist.item>
                         <flux:navlist.item icon="megaphone" :href="route('pengumuman.index')" :current="request()->routeIs('pengumuman.*')" wire:navigate>{{ __('Pengumuman') }}</flux:navlist.item>
                         <flux:navlist.item icon="cog-6-tooth" :href="route('pengaturan.index')" :current="request()->routeIs('pengaturan.*')" wire:navigate>{{ __('Pengaturan Sistem') }}</flux:navlist.item>
+                        <flux:navlist.item icon="circle-stack" :href="route('backup.index')" :current="request()->routeIs('backup.*')" wire:navigate>{{ __('Backup Database') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
             @elseif(auth()->user()->isAdminKecamatan())

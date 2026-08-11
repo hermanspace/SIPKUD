@@ -92,6 +92,21 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 
 RUN pecl install redis && docker-php-ext-enable redis
 
+# Client tools database untuk fitur backup/restore dari aplikasi:
+# - postgresql-client-16 dari repo PGDG (client bawaan Debian terlalu tua
+#   untuk men-dump server PostgreSQL 16)
+# - default-mysql-client untuk deployment yang masih memakai MySQL
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg \
+    && install -d /usr/share/postgresql-common/pgdg \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+        -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+    && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" \
+        > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        postgresql-client-16 \
+        default-mysql-client \
+    && rm -rf /var/lib/apt/lists/*
+
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite headers
 

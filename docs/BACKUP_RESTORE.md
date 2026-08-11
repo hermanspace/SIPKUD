@@ -6,6 +6,30 @@ menjelaskan cara memasang backup harian dan prosedur restore yang teruji.
 
 ---
 
+## 0. Backup & Restore dari Panel Super Admin (cara termudah)
+
+Super Admin dapat mengelola backup langsung dari aplikasi:
+**menu Backup Database** (`/backup`), dengan kemampuan:
+
+- **Buat Backup Sekarang** — dump penuh database (pgsql `.dump` / mysql `.sql.gz`)
+- **Unduh / Unggah** file backup (mis. pindah antar server)
+- **Restore** — mengganti seluruh isi database dari file backup, dengan:
+  - konfirmasi eksplisit (wajib mengetik `RESTORE`),
+  - *safety snapshot* otomatis sebelum restore (selalu bisa kembali),
+  - mode maintenance selama proses,
+  - `migrate --force` + **verifikasi integritas akuntansi otomatis** sesudahnya
+- Semua aksi tercatat di audit log
+
+Backup terjadwal juga berjalan otomatis setiap malam 01:30 via
+`php artisan db:backup --keep=14` (kontainer scheduler) — file tersimpan di
+`storage/app/backups` (volume `sipkud-storage`) dan muncul di panel.
+
+> Tetap **unduh backup secara berkala ke luar server** — file di server yang
+> sama tidak melindungi dari kegagalan VPS. Bagian di bawah ini menjelaskan
+> alternatif backup dari sisi host/cron.
+
+---
+
 ## 1. Backup otomatis harian
 
 Skrip: [`scripts/backup-db.sh`](../scripts/backup-db.sh)

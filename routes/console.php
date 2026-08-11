@@ -8,6 +8,14 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Backup database penuh setiap malam (simpan 14 terbaru).
+// File tersimpan di storage/app/backups dan dapat dikelola dari panel
+// Super Admin (menu Backup Database).
+Schedule::command('db:backup --keep=14')
+    ->dailyAt('01:30')
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/db-backup.log'));
+
 // Verifikasi integritas akuntansi setiap malam.
 // Hasil ketidaksesuaian ditulis ke log (storage/logs) dan command exit code 1.
 Schedule::command('accounting:verify-integrity')

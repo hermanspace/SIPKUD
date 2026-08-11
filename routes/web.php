@@ -74,6 +74,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Pengaturan Sistem
         Route::get('pengaturan', App\Livewire\MasterData\Pengaturan\Edit::class)->name('pengaturan.index');
+
+        // Backup & Restore Database
+        Route::get('backup', App\Livewire\MasterData\Backup\Index::class)->name('backup.index');
     });
 
     // Super Admin & Admin Kecamatan Routes - Pengguna CRUD
