@@ -4,6 +4,7 @@ use App\Livewire\MasterData\Backup\Index;
 use App\Models\Desa;
 use App\Models\User;
 use App\Services\DatabaseBackupService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
@@ -88,7 +89,7 @@ it('menerima unggahan file backup .dump ke daftar backup', function () {
     $this->actingAs(User::factory()->superAdmin()->create());
 
     Livewire::test(Index::class)
-        ->set('uploadFile', \Illuminate\Http\UploadedFile::fake()->create('produksi.dump', 100))
+        ->set('uploadFile', UploadedFile::fake()->create('produksi.dump', 100))
         ->call('upload')
         ->assertHasNoErrors();
 
@@ -103,7 +104,7 @@ it('menolak unggahan file dengan format selain .dump / .sql.gz', function () {
     $this->actingAs(User::factory()->superAdmin()->create());
 
     Livewire::test(Index::class)
-        ->set('uploadFile', \Illuminate\Http\UploadedFile::fake()->create('bukan-backup.txt', 10))
+        ->set('uploadFile', UploadedFile::fake()->create('bukan-backup.txt', 10))
         ->call('upload');
 
     expect(app(DatabaseBackupService::class)->list())->toBeEmpty();
