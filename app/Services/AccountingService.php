@@ -326,73 +326,6 @@ class AccountingService
     }
 
     /**
-     * Hitung neraca saldo untuk periode tertentu (LEGACY - dari jurnal)
-     *
-     * @deprecated Gunakan getNeracaSaldoFromLedger() untuk format lengkap
-     */
-    public function getNeracaSaldo(int $desaId, ?int $bulan = null, ?int $tahun = null, ?int $unitUsahaId = null): array
-    {
-        $query = JurnalDetail::query()
-            ->join('jurnal', 'jurnal_detail.jurnal_id', '=', 'jurnal.id')
-            ->join('akun', 'jurnal_detail.akun_id', '=', 'akun.id')
-            ->where('jurnal.desa_id', $desaId)
-            ->where('jurnal.status', 'posted');
-
-        // Filter unit usaha
-        if ($unitUsahaId) {
-            $query->where('jurnal.unit_usaha_id', $unitUsahaId);
-        }
-
-        // Filter periode
-        if ($bulan && $tahun) {
-            $query->whereMonth('jurnal.tanggal_transaksi', $bulan)
-                ->whereYear('jurnal.tanggal_transaksi', $tahun);
-        } elseif ($tahun) {
-            $query->whereYear('jurnal.tanggal_transaksi', $tahun);
-        }
-
-        // Group by akun dan hitung total debit/kredit
-        $results = $query->select(
-            'akun.id',
-            'akun.kode_akun',
-            'akun.nama_akun',
-            'akun.tipe_akun',
-            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
-            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
-        )
-            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
-            ->orderBy('akun.kode_akun')
-            ->get();
-
-        // Hitung saldo per akun berdasarkan normal balance
-        $neracaSaldo = $results->map(function ($item) {
-            // Normal balance: Aset & Beban = Debit, Kewajiban & Ekuitas & Pendapatan = Kredit
-            $normalDebit = in_array($item->tipe_akun, ['aset', 'beban']);
-
-            if ($normalDebit) {
-                $saldo = $item->total_debit - $item->total_kredit;
-                $posisiSaldo = $saldo >= 0 ? 'debit' : 'kredit';
-            } else {
-                $saldo = $item->total_kredit - $item->total_debit;
-                $posisiSaldo = $saldo >= 0 ? 'kredit' : 'debit';
-            }
-
-            return [
-                'akun_id' => $item->id,
-                'kode_akun' => $item->kode_akun,
-                'nama_akun' => $item->nama_akun,
-                'tipe_akun' => $item->tipe_akun,
-                'total_debit' => (float) $item->total_debit,
-                'total_kredit' => (float) $item->total_kredit,
-                'saldo' => abs($saldo),
-                'posisi_saldo' => $posisiSaldo,
-            ];
-        });
-
-        return $neracaSaldo->toArray();
-    }
-
-    /**
      * Get Laba Rugi dari tabel neraca_saldo (ledger)
      * Support 2 mode: Bulanan (mutasi) dan Kumulatif (saldo akhir)
      *
@@ -517,34 +450,6 @@ class AccountingService
             'laba_bersih' => $labaBersih,
             'detail_pendapatan' => $pendapatanList,
             'detail_beban' => $bebanList,
-        ];
-    }
-
-    /**
-     * Hitung laba rugi untuk periode tertentu (LEGACY - dari jurnal)
-     *
-     * @deprecated Gunakan getLabaRugiFromLedger() untuk format lengkap
-     */
-    public function getLabaRugi(int $desaId, int $bulan, int $tahun, ?int $unitUsahaId = null): array
-    {
-        $neracaSaldo = $this->getNeracaSaldo($desaId, $bulan, $tahun, $unitUsahaId);
-
-        $pendapatan = collect($neracaSaldo)
-            ->where('tipe_akun', 'pendapatan')
-            ->sum('saldo');
-
-        $beban = collect($neracaSaldo)
-            ->where('tipe_akun', 'beban')
-            ->sum('saldo');
-
-        $labaRugi = $pendapatan - $beban;
-
-        return [
-            'pendapatan' => $pendapatan,
-            'beban' => $beban,
-            'laba_rugi' => $labaRugi,
-            'detail_pendapatan' => collect($neracaSaldo)->where('tipe_akun', 'pendapatan')->values()->toArray(),
-            'detail_beban' => collect($neracaSaldo)->where('tipe_akun', 'beban')->values()->toArray(),
         ];
     }
 
@@ -754,71 +659,6 @@ class AccountingService
             'prive' => (float) $totalPrive,
             'modal_akhir' => (float) $modalAkhir,
             'detail_prive' => $priveList,
-        ];
-    }
-
-    /**
-     * Hitung neraca (balance sheet) pada tanggal tertentu (LEGACY - dari jurnal)
-     *
-     * @deprecated Gunakan getNeracaFromLedger() untuk format lengkap
-     *
-     * @param  string  $tanggal  (Y-m-d)
-     */
-    public function getNeraca(int $desaId, string $tanggal, ?int $unitUsahaId = null): array
-    {
-        $query = JurnalDetail::query()
-            ->join('jurnal', 'jurnal_detail.jurnal_id', '=', 'jurnal.id')
-            ->join('akun', 'jurnal_detail.akun_id', '=', 'akun.id')
-            ->where('jurnal.desa_id', $desaId)
-            ->where('jurnal.status', 'posted')
-            ->where('jurnal.tanggal_transaksi', '<=', $tanggal);
-
-        if ($unitUsahaId) {
-            $query->where('jurnal.unit_usaha_id', $unitUsahaId);
-        }
-
-        $results = $query->select(
-            'akun.id',
-            'akun.kode_akun',
-            'akun.nama_akun',
-            'akun.tipe_akun',
-            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
-            DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
-        )
-            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
-            ->orderBy('akun.kode_akun')
-            ->get();
-
-        // Hitung saldo per akun
-        $saldoAkun = $results->map(function ($item) {
-            $normalDebit = in_array($item->tipe_akun, ['aset', 'beban']);
-
-            if ($normalDebit) {
-                $saldo = $item->total_debit - $item->total_kredit;
-            } else {
-                $saldo = $item->total_kredit - $item->total_debit;
-            }
-
-            return [
-                'akun_id' => $item->id,
-                'kode_akun' => $item->kode_akun,
-                'nama_akun' => $item->nama_akun,
-                'tipe_akun' => $item->tipe_akun,
-                'saldo' => $saldo,
-            ];
-        });
-
-        $aset = $saldoAkun->where('tipe_akun', 'aset')->sum('saldo');
-        $kewajiban = $saldoAkun->where('tipe_akun', 'kewajiban')->sum('saldo');
-        $ekuitas = $saldoAkun->where('tipe_akun', 'ekuitas')->sum('saldo');
-
-        return [
-            'aset' => $aset,
-            'kewajiban' => $kewajiban,
-            'ekuitas' => $ekuitas,
-            'detail_aset' => $saldoAkun->where('tipe_akun', 'aset')->values()->toArray(),
-            'detail_kewajiban' => $saldoAkun->where('tipe_akun', 'kewajiban')->values()->toArray(),
-            'detail_ekuitas' => $saldoAkun->where('tipe_akun', 'ekuitas')->values()->toArray(),
         ];
     }
 
@@ -1044,6 +884,341 @@ class AccountingService
                     'closed_at' => null,
                     'closed_by' => null,
                 ]);
+        });
+    }
+
+    /**
+     * Laporan Arus Kas metode langsung (PP 11/2021, Kepmendesa 136/2022).
+     *
+     * Sumber: transaksi_kas (semua kas masuk/keluar tercatat dengan akun
+     * lawan). Klasifikasi berdasarkan tipe akun lawan:
+     *  - pendapatan/beban/aset lancar : aktivitas OPERASI
+     *  - aset tetap (prefix config)   : aktivitas INVESTASI
+     *  - kewajiban/ekuitas            : aktivitas PENDANAAN
+     *
+     * @param  int|null  $bulan  null = satu tahun penuh
+     */
+    public function getArusKas(int $desaId, int $tahun, ?int $bulan = null, ?int $unitUsahaId = null): array
+    {
+        $start = $bulan
+            ? Carbon::create($tahun, $bulan, 1)->startOfMonth()
+            : Carbon::create($tahun, 1, 1)->startOfYear();
+        $end = $bulan
+            ? $start->copy()->endOfMonth()
+            : $start->copy()->endOfYear();
+
+        $baseQuery = fn () => DB::table('transaksi_kas')
+            ->join('akun', 'akun.id', '=', 'transaksi_kas.akun_lawan_id')
+            ->where('transaksi_kas.desa_id', $desaId)
+            ->when($unitUsahaId, fn ($q) => $q->where('transaksi_kas.unit_usaha_id', $unitUsahaId));
+
+        // Saldo awal kas = saldo awal tercatat + arus neto sebelum periode
+        $saldoAwalTercatat = DB::table('transaksi_kas')
+            ->where('desa_id', $desaId)
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->where('jenis_transaksi', 'saldo_awal')
+            ->where('tanggal_transaksi', '<', $start->toDateString())
+            ->sum('jumlah');
+
+        $netoSebelum = $baseQuery()
+            ->whereIn('transaksi_kas.jenis_transaksi', ['masuk', 'keluar'])
+            ->where('transaksi_kas.tanggal_transaksi', '<', $start->toDateString())
+            ->selectRaw("COALESCE(SUM(CASE WHEN jenis_transaksi = 'masuk' THEN jumlah ELSE -jumlah END), 0) as neto")
+            ->value('neto');
+
+        $saldoAwalKas = (float) $saldoAwalTercatat + (float) $netoSebelum;
+
+        // Mutasi periode berjalan per akun lawan
+        $rows = $baseQuery()
+            ->whereIn('transaksi_kas.jenis_transaksi', ['masuk', 'keluar'])
+            ->whereBetween('transaksi_kas.tanggal_transaksi', [$start->toDateString(), $end->toDateString()])
+            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun', 'transaksi_kas.jenis_transaksi')
+            ->select([
+                'akun.kode_akun',
+                'akun.nama_akun',
+                'akun.tipe_akun',
+                'transaksi_kas.jenis_transaksi',
+                DB::raw('SUM(transaksi_kas.jumlah) as jumlah'),
+            ])
+            ->orderBy('akun.kode_akun')
+            ->get();
+
+        $saldoAwalPeriodeIni = DB::table('transaksi_kas')
+            ->where('desa_id', $desaId)
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->where('jenis_transaksi', 'saldo_awal')
+            ->whereBetween('tanggal_transaksi', [$start->toDateString(), $end->toDateString()])
+            ->sum('jumlah');
+
+        $aktivitas = [
+            'operasi' => ['masuk' => [], 'keluar' => [], 'neto' => 0.0],
+            'investasi' => ['masuk' => [], 'keluar' => [], 'neto' => 0.0],
+            'pendanaan' => ['masuk' => [], 'keluar' => [], 'neto' => 0.0],
+        ];
+
+        $investasiPrefixes = config('accounting.arus_kas.investasi_prefixes', []);
+
+        foreach ($rows as $row) {
+            $kelompok = match ($row->tipe_akun) {
+                'pendapatan', 'beban' => 'operasi',
+                'kewajiban', 'ekuitas' => 'pendanaan',
+                default => collect($investasiPrefixes)
+                    ->contains(fn ($p) => str_starts_with($row->kode_akun, $p)) ? 'investasi' : 'operasi',
+            };
+
+            $arah = $row->jenis_transaksi === 'masuk' ? 'masuk' : 'keluar';
+            $aktivitas[$kelompok][$arah][] = [
+                'kode_akun' => $row->kode_akun,
+                'nama_akun' => $row->nama_akun,
+                'jumlah' => (float) $row->jumlah,
+            ];
+            $aktivitas[$kelompok]['neto'] += $row->jenis_transaksi === 'masuk'
+                ? (float) $row->jumlah
+                : -(float) $row->jumlah;
+        }
+
+        // Setoran saldo awal dalam periode = aktivitas pendanaan
+        if ((float) $saldoAwalPeriodeIni !== 0.0) {
+            $aktivitas['pendanaan']['masuk'][] = [
+                'kode_akun' => '-',
+                'nama_akun' => 'Setoran saldo awal kas',
+                'jumlah' => (float) $saldoAwalPeriodeIni,
+            ];
+            $aktivitas['pendanaan']['neto'] += (float) $saldoAwalPeriodeIni;
+        }
+
+        $kenaikanKas = $aktivitas['operasi']['neto'] + $aktivitas['investasi']['neto'] + $aktivitas['pendanaan']['neto'];
+
+        return [
+            'periode_mulai' => $start->toDateString(),
+            'periode_akhir' => $end->toDateString(),
+            'saldo_awal_kas' => $saldoAwalKas,
+            'aktivitas' => $aktivitas,
+            'kenaikan_kas' => $kenaikanKas,
+            'saldo_akhir_kas' => $saldoAwalKas + $kenaikanKas,
+        ];
+    }
+
+    /**
+     * Laba rugi satu tahun penuh: agregasi mutasi ledger seluruh bulan.
+     * Dipakai tutup buku tahunan & pratinjau SHU.
+     *
+     * @return array{pendapatan: float, beban: float, laba_bersih: float, detail_pendapatan: array, detail_beban: array}
+     */
+    public function getLabaRugiTahunan(int $desaId, int $tahun, ?int $unitUsahaId = null): array
+    {
+        $rows = NeracaSaldo::withoutGlobalScopes()
+            ->join('akun', 'akun.id', '=', 'neraca_saldo.akun_id')
+            ->where('neraca_saldo.desa_id', $desaId)
+            ->where('neraca_saldo.periode', 'like', sprintf('%04d-%%', $tahun))
+            ->whereIn('akun.tipe_akun', ['pendapatan', 'beban'])
+            ->when(
+                $unitUsahaId,
+                fn ($q) => $q->where('neraca_saldo.unit_usaha_id', $unitUsahaId)
+            )
+            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
+            ->select([
+                'akun.id as akun_id',
+                'akun.kode_akun',
+                'akun.nama_akun',
+                'akun.tipe_akun',
+                DB::raw('SUM(neraca_saldo.mutasi_debit) as total_debit'),
+                DB::raw('SUM(neraca_saldo.mutasi_kredit) as total_kredit'),
+            ])
+            ->orderBy('akun.kode_akun')
+            ->get();
+
+        $detailPendapatan = [];
+        $detailBeban = [];
+
+        foreach ($rows as $row) {
+            if ($row->tipe_akun === 'pendapatan') {
+                $jumlah = (float) $row->total_kredit - (float) $row->total_debit;
+                $detailPendapatan[] = [
+                    'akun_id' => (int) $row->akun_id,
+                    'kode_akun' => $row->kode_akun,
+                    'nama_akun' => $row->nama_akun,
+                    'jumlah' => $jumlah,
+                ];
+            } else {
+                $jumlah = (float) $row->total_debit - (float) $row->total_kredit;
+                $detailBeban[] = [
+                    'akun_id' => (int) $row->akun_id,
+                    'kode_akun' => $row->kode_akun,
+                    'nama_akun' => $row->nama_akun,
+                    'jumlah' => $jumlah,
+                ];
+            }
+        }
+
+        $pendapatan = array_sum(array_column($detailPendapatan, 'jumlah'));
+        $beban = array_sum(array_column($detailBeban, 'jumlah'));
+
+        return [
+            'pendapatan' => $pendapatan,
+            'beban' => $beban,
+            'laba_bersih' => $pendapatan - $beban,
+            'detail_pendapatan' => $detailPendapatan,
+            'detail_beban' => $detailBeban,
+        ];
+    }
+
+    /**
+     * Cek apakah tahun buku sudah ditutup (ada jurnal penutup tahunan).
+     */
+    public function isYearClosed(int $desaId, int $tahun, ?int $unitUsahaId = null): bool
+    {
+        return Jurnal::withoutGlobalScopes()
+            ->where('desa_id', $desaId)
+            ->where('jenis_jurnal', 'penutup')
+            ->where('status', 'posted')
+            ->where('keterangan', 'like', "Jurnal Penutup Tahun {$tahun}%")
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->exists();
+    }
+
+    /**
+     * Tutup buku tahunan.
+     *
+     * Membuat jurnal penutup per 31 Desember: menutup seluruh saldo
+     * pendapatan dan beban ke akun "SHU Tahun Berjalan", lalu jurnal
+     * reklasifikasi per 1 Januari tahun berikutnya: SHU Tahun Berjalan ->
+     * SHU Tahun Lalu. Mengembalikan laba bersih tahun tersebut.
+     *
+     * @return array{laba_bersih: float, jurnal_penutup: Jurnal, jurnal_reklas: Jurnal|null}
+     */
+    public function closeYear(int $desaId, int $tahun, ?int $unitUsahaId = null): array
+    {
+        if ($this->isYearClosed($desaId, $tahun, $unitUsahaId)) {
+            throw ValidationException::withMessages([
+                'tahun' => "Tahun buku {$tahun} sudah ditutup.",
+            ]);
+        }
+
+        $hasDraft = Jurnal::withoutGlobalScopes()
+            ->where('desa_id', $desaId)
+            ->where('status', 'draft')
+            ->whereYear('tanggal_transaksi', $tahun)
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->exists();
+
+        if ($hasDraft) {
+            throw ValidationException::withMessages([
+                'draft' => "Masih ada jurnal draft di tahun {$tahun}. Posting atau hapus dulu sebelum tutup buku.",
+            ]);
+        }
+
+        // Akumulasi mutasi pendapatan & beban SETAHUN penuh dari ledger
+        // (baris ledger hanya ada di bulan bertransaksi, jadi tidak cukup
+        // membaca saldo Desember saja)
+        $labaRugi = $this->getLabaRugiTahunan($desaId, $tahun, $unitUsahaId);
+
+        $akunShuBerjalan = Akun::aktif()
+            ->where('nama_akun', config('accounting.tutup_buku.akun_shu_berjalan'))
+            ->first();
+        $akunShuTahunLalu = Akun::aktif()
+            ->where('nama_akun', config('accounting.tutup_buku.akun_shu_tahun_lalu'))
+            ->first();
+
+        if (! $akunShuBerjalan || ! $akunShuTahunLalu) {
+            throw ValidationException::withMessages([
+                'akun' => 'Akun "SHU Tahun Berjalan" / "SHU Tahun Lalu" tidak ditemukan di COA.',
+            ]);
+        }
+
+        $details = [];
+
+        // Tutup pendapatan: debit sebesar saldonya
+        foreach ($labaRugi['detail_pendapatan'] as $p) {
+            if (($p['jumlah'] ?? 0) > 0) {
+                $details[] = [
+                    'akun_id' => $p['akun_id'],
+                    'posisi' => 'debit',
+                    'jumlah' => $p['jumlah'],
+                    'keterangan' => 'Penutupan pendapatan',
+                ];
+            }
+        }
+
+        // Tutup beban: kredit sebesar saldonya
+        foreach ($labaRugi['detail_beban'] as $b) {
+            if (($b['jumlah'] ?? 0) > 0) {
+                $details[] = [
+                    'akun_id' => $b['akun_id'],
+                    'posisi' => 'kredit',
+                    'jumlah' => $b['jumlah'],
+                    'keterangan' => 'Penutupan beban',
+                ];
+            }
+        }
+
+        $labaBersih = (float) $labaRugi['laba_bersih'];
+
+        if (empty($details) || abs($labaBersih) < 0.01 && count($details) < 2) {
+            throw ValidationException::withMessages([
+                'data' => "Tidak ada saldo pendapatan/beban untuk ditutup di tahun {$tahun}.",
+            ]);
+        }
+
+        // Selisih (laba/rugi) ke SHU Tahun Berjalan
+        if ($labaBersih > 0) {
+            $details[] = [
+                'akun_id' => $akunShuBerjalan->id,
+                'posisi' => 'kredit',
+                'jumlah' => $labaBersih,
+                'keterangan' => 'Laba bersih (SHU) tahun berjalan',
+            ];
+        } elseif ($labaBersih < 0) {
+            $details[] = [
+                'akun_id' => $akunShuBerjalan->id,
+                'posisi' => 'debit',
+                'jumlah' => abs($labaBersih),
+                'keterangan' => 'Rugi bersih tahun berjalan',
+            ];
+        }
+
+        return DB::transaction(function () use ($desaId, $tahun, $unitUsahaId, $details, $labaBersih, $akunShuBerjalan, $akunShuTahunLalu) {
+            $jurnalPenutup = $this->createJurnal([
+                'desa_id' => $desaId,
+                'unit_usaha_id' => $unitUsahaId,
+                'tanggal_transaksi' => sprintf('%04d-12-31', $tahun),
+                'jenis_jurnal' => 'penutup',
+                'keterangan' => "Jurnal Penutup Tahun {$tahun}",
+                'status' => 'posted',
+                'details' => $details,
+            ], allowClosedPeriod: true);
+
+            // Reklasifikasi awal tahun berikutnya: SHU Berjalan -> SHU Tahun Lalu
+            // (dilewati bila laba/rugi nol)
+            $jumlahReklas = abs($labaBersih);
+            $jurnalReklas = $jumlahReklas < 0.01 ? null : $this->createJurnal([
+                'desa_id' => $desaId,
+                'unit_usaha_id' => $unitUsahaId,
+                'tanggal_transaksi' => sprintf('%04d-01-01', $tahun + 1),
+                'jenis_jurnal' => 'penutup',
+                'keterangan' => "Reklasifikasi SHU Tahun {$tahun} ke SHU Tahun Lalu",
+                'status' => 'posted',
+                'details' => [
+                    [
+                        'akun_id' => $labaBersih >= 0 ? $akunShuBerjalan->id : $akunShuTahunLalu->id,
+                        'posisi' => 'debit',
+                        'jumlah' => $jumlahReklas,
+                        'keterangan' => 'Reklasifikasi SHU',
+                    ],
+                    [
+                        'akun_id' => $labaBersih >= 0 ? $akunShuTahunLalu->id : $akunShuBerjalan->id,
+                        'posisi' => 'kredit',
+                        'jumlah' => $jumlahReklas,
+                        'keterangan' => 'Reklasifikasi SHU',
+                    ],
+                ],
+            ], allowClosedPeriod: true);
+
+            return [
+                'laba_bersih' => $labaBersih,
+                'jurnal_penutup' => $jurnalPenutup,
+                'jurnal_reklas' => $jurnalReklas,
+            ];
         });
     }
 

@@ -224,22 +224,34 @@
                             </div>
                             
                             <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700">Persentase SHU:</span>
-                                <span class="text-lg font-semibold text-gray-900">{{ $persentaseShu }}%</span>
+                                <span class="text-sm text-gray-700">Total Beban:</span>
+                                <span class="text-lg font-semibold text-gray-900">(Rp {{ number_format($totalBeban, 0, ',', '.') }})</span>
                             </div>
-                            
+
                             <div class="border-t border-indigo-300 pt-4">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-base font-semibold text-indigo-900">Total SHU:</span>
-                                    <span class="text-2xl font-bold text-indigo-700">Rp {{ number_format($totalShu, 0, ',', '.') }}</span>
+                                    <span class="text-base font-semibold text-indigo-900">SHU (Laba Bersih):</span>
+                                    <span class="text-2xl font-bold {{ $totalShu < 0 ? 'text-red-600' : 'text-indigo-700' }}">Rp {{ number_format($totalShu, 0, ',', '.') }}</span>
                                 </div>
                             </div>
+
+                            @if($totalShu > 0)
+                                <div class="border-t border-indigo-200 pt-3">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">Simulasi Alokasi SHU (sesuai AD/ART):</p>
+                                    @foreach($alokasiShu as $item)
+                                        <div class="flex justify-between text-sm py-0.5">
+                                            <span class="text-gray-600">{{ $item['nama'] }} ({{ $item['persen'] }}%)</span>
+                                            <span>Rp {{ number_format($item['jumlah'], 0, ',', '.') }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
-                        
+
                         <div class="mt-4 p-3 bg-white rounded border border-indigo-200">
                             <p class="text-xs text-gray-600">
-                                <strong>Catatan:</strong> SHU dihitung {{ $persentaseShu }}% dari total pendapatan periode ini. 
-                                Perhitungan ini merupakan perhitungan sederhana berbasis pendapatan yang diterima.
+                                <strong>Catatan:</strong> SHU = total pendapatan dikurangi total beban periode ini (laba bersih).
+                                Persentase alokasi mengikuti konfigurasi AD/ART; pembagian aktual ditetapkan Musyawarah Desa.
                             </p>
                         </div>
                     </div>

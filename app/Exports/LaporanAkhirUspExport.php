@@ -133,10 +133,22 @@ class LaporanAkhirUspExport
         ]);
         $row++;
 
-        $sheet->setCellValue('A'.$row, "SHU ({$this->data['persentaseShu']}% dari Total Pendapatan)");
+        $sheet->setCellValue('A'.$row, 'Total Beban');
+        $sheet->setCellValue('B'.$row, $this->data['totalBeban']);
+        $sheet->getStyle('B'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $row++;
+
+        $sheet->setCellValue('A'.$row, 'SHU / Laba Bersih (Pendapatan - Beban)');
         $sheet->setCellValue('B'.$row, $this->data['totalShu']);
         $sheet->getStyle('B'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $row++;
+
+        foreach ($this->data['alokasiShu'] as $alokasi) {
+            $sheet->setCellValue('A'.$row, "  Alokasi: {$alokasi['nama']} ({$alokasi['persen']}%)");
+            $sheet->setCellValue('B'.$row, $alokasi['jumlah']);
+            $sheet->getStyle('B'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $row++;
+        }
 
         $row++; // Empty row
 

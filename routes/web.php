@@ -2,13 +2,18 @@
 
 use App\Http\Controllers\LivewireFileUploadController;
 use App\Livewire\Kas\SaldoAwal;
+use App\Livewire\Laporan\ArusKas;
 use App\Livewire\Laporan\BukuKas;
+use App\Livewire\Laporan\Calk;
+use App\Livewire\Laporan\Kolektibilitas;
 use App\Livewire\Laporan\LabaRugi;
 use App\Livewire\Laporan\LaporanAkhirUsp;
 use App\Livewire\Laporan\LppUed;
 use App\Livewire\Laporan\Neraca;
 use App\Livewire\Laporan\NeracaSaldo;
+use App\Livewire\Laporan\PerubahanEkuitas;
 use App\Livewire\Periode\Show;
+use App\Livewire\Periode\TutupTahun;
 use App\Livewire\Pinjaman\Create;
 use App\Livewire\Pinjaman\Edit;
 use App\Livewire\Settings\Appearance;
@@ -110,6 +115,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('laporan/neraca-saldo', NeracaSaldo::class)->name('laporan.neraca-saldo');
         Route::get('laporan/laba-rugi', LabaRugi::class)->name('laporan.laba-rugi');
         Route::get('laporan/neraca', Neraca::class)->name('laporan.neraca');
+        Route::get('laporan/arus-kas', ArusKas::class)->name('laporan.arus-kas');
+        Route::get('laporan/perubahan-ekuitas', PerubahanEkuitas::class)->name('laporan.perubahan-ekuitas');
+        Route::get('laporan/kolektibilitas', Kolektibilitas::class)->name('laporan.kolektibilitas');
+        Route::get('laporan/calk', Calk::class)->name('laporan.calk');
 
         // Periode Akuntansi
         Route::get('periode', App\Livewire\Periode\Index::class)->name('periode.index');
@@ -147,6 +156,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('kas/create', App\Livewire\Kas\Create::class)->name('kas.create');
         Route::get('kas/{id}/edit', App\Livewire\Kas\Edit::class)->name('kas.edit');
         Route::get('kas/saldo-awal', SaldoAwal::class)->name('kas.saldo-awal');
+        Route::get('periode/tutup-tahun', TutupTahun::class)->name('periode.tutup-tahun');
 
         // Buku Memorial CRUD
         Route::get('memorial/create', App\Livewire\Memorial\Create::class)->name('memorial.create');

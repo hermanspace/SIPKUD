@@ -53,6 +53,10 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.neraca-saldo')" :current="request()->routeIs('laporan.neraca-saldo')" wire:navigate>{{ __('Neraca Saldo') }}</flux:navlist.item>
                         <flux:navlist.item icon="presentation-chart-line" :href="route('laporan.laba-rugi')" :current="request()->routeIs('laporan.laba-rugi')" wire:navigate>{{ __('Laba Rugi') }}</flux:navlist.item>
                         <flux:navlist.item icon="clipboard-document-list" :href="route('laporan.neraca')" :current="request()->routeIs('laporan.neraca')" wire:navigate>{{ __('Neraca') }}</flux:navlist.item>
+                        <flux:navlist.item icon="arrows-right-left" :href="route('laporan.arus-kas')" :current="request()->routeIs('laporan.arus-kas')" wire:navigate>{{ __('Arus Kas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 
@@ -103,6 +107,10 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.neraca-saldo')" :current="request()->routeIs('laporan.neraca-saldo')" wire:navigate>{{ __('Neraca Saldo') }}</flux:navlist.item>
                         <flux:navlist.item icon="presentation-chart-line" :href="route('laporan.laba-rugi')" :current="request()->routeIs('laporan.laba-rugi')" wire:navigate>{{ __('Laba Rugi') }}</flux:navlist.item>
                         <flux:navlist.item icon="clipboard-document-list" :href="route('laporan.neraca')" :current="request()->routeIs('laporan.neraca')" wire:navigate>{{ __('Neraca') }}</flux:navlist.item>
+                        <flux:navlist.item icon="arrows-right-left" :href="route('laporan.arus-kas')" :current="request()->routeIs('laporan.arus-kas')" wire:navigate>{{ __('Arus Kas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 
@@ -153,6 +161,10 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.neraca-saldo')" :current="request()->routeIs('laporan.neraca-saldo')" wire:navigate>{{ __('Neraca Saldo') }}</flux:navlist.item>
                         <flux:navlist.item icon="presentation-chart-line" :href="route('laporan.laba-rugi')" :current="request()->routeIs('laporan.laba-rugi')" wire:navigate>{{ __('Laba Rugi') }}</flux:navlist.item>
                         <flux:navlist.item icon="clipboard-document-list" :href="route('laporan.neraca')" :current="request()->routeIs('laporan.neraca')" wire:navigate>{{ __('Neraca') }}</flux:navlist.item>
+                        <flux:navlist.item icon="arrows-right-left" :href="route('laporan.arus-kas')" :current="request()->routeIs('laporan.arus-kas')" wire:navigate>{{ __('Arus Kas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
+                        <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 

@@ -225,4 +225,38 @@ class Pinjaman extends Model
     {
         return $query->where('status_pinjaman', 'lunas');
     }
+
+    /**
+     * Tunggakan angsuran (dalam bulan): selisih angsuran yang seharusnya
+     * sudah dibayar (berdasar umur pinjaman & tenor) dengan yang terbayar.
+     */
+    public function getTunggakanBulanAttribute(): int
+    {
+        if ($this->status_pinjaman !== 'aktif') {
+            return 0;
+        }
+
+        $bulanBerjalan = (int) $this->tanggal_pinjaman->diffInMonths(now());
+        $angsuranDiharapkan = min($bulanBerjalan, (int) $this->jangka_waktu_bulan);
+        $angsuranDibayar = $this->angsuran()->count();
+
+        return max(0, $angsuranDiharapkan - $angsuranDibayar);
+    }
+
+    /**
+     * Kolektibilitas pinjaman (konvensi penilaian kesehatan KSP/USP):
+     * lancar, kurang_lancar, diragukan, macet - batas di config/accounting.php.
+     */
+    public function getKolektibilitasAttribute(): string
+    {
+        $tunggakan = $this->tunggakan_bulan;
+        $batas = config('accounting.kolektibilitas');
+
+        return match (true) {
+            $tunggakan >= $batas['macet'] => 'macet',
+            $tunggakan >= $batas['diragukan'] => 'diragukan',
+            $tunggakan >= $batas['kurang_lancar'] => 'kurang_lancar',
+            default => 'lancar',
+        };
+    }
 }

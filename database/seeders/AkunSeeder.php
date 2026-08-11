@@ -229,6 +229,11 @@ class AkunSeeder extends Seeder
                 'tipe_akun' => 'beban',
             ],
             [
+                'kode_akun' => '5-5200',
+                'nama_akun' => 'Beban Penyisihan Kerugian Piutang',
+                'tipe_akun' => 'beban',
+            ],
+            [
                 'kode_akun' => '5-6000',
                 'nama_akun' => 'Beban Pemeliharaan dan Perbaikan',
                 'tipe_akun' => 'beban',

@@ -121,9 +121,19 @@
     <div class="section">
         <div class="section-title">SISA HASIL USAHA (SHU)</div>
         <div class="row">
-            <div class="label">SHU ({{ $persentaseShu }}% dari Total Pendapatan)</div>
+            <div class="label">Total Beban</div>
+            <div class="value">(Rp {{ number_format($totalBeban, 0, ',', '.') }})</div>
+        </div>
+        <div class="row">
+            <div class="label">SHU / Laba Bersih (Pendapatan - Beban)</div>
             <div class="value">Rp {{ number_format($totalShu, 0, ',', '.') }}</div>
         </div>
+        @foreach($alokasiShu as $item)
+            <div class="row">
+                <div class="label" style="padding-left: 12px">Alokasi: {{ $item['nama'] }} ({{ $item['persen'] }}%)</div>
+                <div class="value">Rp {{ number_format($item['jumlah'], 0, ',', '.') }}</div>
+            </div>
+        @endforeach
     </div>
 
     <div class="section">

@@ -6,11 +6,11 @@ use App\Exports\LaporanAkhirUspExport;
 use App\Models\AngsuranPinjaman;
 use App\Models\Desa;
 use App\Models\Kecamatan;
-use App\Models\Pengaturan;
 use App\Models\Pinjaman;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -184,10 +184,47 @@ class LaporanAkhirUsp extends Component
         $totalPendapatanDenda = (clone $angsuranQuery)->sum('angsuran_pinjaman.denda_dibayar');
         $totalPendapatan = $totalPendapatanJasa + $totalPendapatanDenda;
 
-        // Ambil persentase SHU
-        $pengaturan = Pengaturan::getSettings();
-        $persentaseShu = $pengaturan->persentase_shu ?? 20;
-        $totalShu = $totalPendapatan * ($persentaseShu / 100);
+        // Total beban dari jurnal (scope & periode yang sama).
+        // SHU = laba bersih (pendapatan - beban), BUKAN persentase pendapatan.
+        $desaIds = null;
+        if ($this->desa_id) {
+            $desaIds = [$this->desa_id];
+        } elseif ($this->kecamatan_id) {
+            $desaIds = Desa::where('kecamatan_id', $this->kecamatan_id)->pluck('id')->all();
+        } elseif ($user->isAdminKecamatan()) {
+            $desaIds = Desa::where('kecamatan_id', $user->kecamatan_id)->pluck('id')->all();
+        } elseif ($user->isAdminDesa()) {
+            $desaIds = [$user->desa_id];
+        }
+
+        $bebanQuery = DB::table('jurnal_detail')
+            ->join('jurnal', 'jurnal.id', '=', 'jurnal_detail.jurnal_id')
+            ->join('akun', 'akun.id', '=', 'jurnal_detail.akun_id')
+            ->whereNull('jurnal.deleted_at')
+            ->where('jurnal.status', 'posted')
+            ->where('jurnal.jenis_jurnal', '!=', 'penutup')
+            ->where('akun.tipe_akun', 'beban')
+            ->when($desaIds, fn ($q) => $q->whereIn('jurnal.desa_id', $desaIds));
+
+        if ($this->bulan && $this->tahun) {
+            $bebanQuery->whereMonth('jurnal.tanggal_transaksi', $this->bulan)
+                ->whereYear('jurnal.tanggal_transaksi', $this->tahun);
+        } elseif ($this->tahun) {
+            $bebanQuery->whereYear('jurnal.tanggal_transaksi', $this->tahun);
+        }
+
+        $totalBeban = (float) $bebanQuery
+            ->selectRaw("COALESCE(SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE -jurnal_detail.jumlah END), 0) as total")
+            ->value('total');
+
+        $totalShu = $totalPendapatan - $totalBeban;
+
+        // Simulasi alokasi SHU sesuai konfigurasi AD/ART (config/accounting.php)
+        $alokasiShu = collect(config('accounting.alokasi_shu', []))->map(fn ($a) => [
+            'nama' => $a['nama'],
+            'persen' => $a['persen'],
+            'jumlah' => max(0, $totalShu) * $a['persen'] / 100,
+        ])->all();
 
         // Hitung sisa pinjaman
         $pinjamanAktif = $pinjamanQuery->where('status_pinjaman', 'aktif')->get();
@@ -222,8 +259,9 @@ class LaporanAkhirUsp extends Component
             'totalPendapatanJasa' => $totalPendapatanJasa,
             'totalPendapatanDenda' => $totalPendapatanDenda,
             'totalPendapatan' => $totalPendapatan,
+            'totalBeban' => $totalBeban,
             'totalShu' => $totalShu,
-            'persentaseShu' => $persentaseShu,
+            'alokasiShu' => $alokasiShu,
             'totalSisaPinjaman' => $totalSisaPinjaman,
             'totalPinjamanTersalurkan' => $totalPinjamanTersalurkan,
             'totalPokokTerbayar' => $totalPokokTerbayar,
