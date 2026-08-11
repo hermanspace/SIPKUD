@@ -12,6 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Proxy tepercaya di depan aplikasi (Nginx Proxy Manager/Cloudflare).
+        // Default '*' karena app hanya menerima trafik dari jaringan Docker internal.
+        // Batasi via TRUSTED_PROXIES (daftar IP/CIDR dipisah koma) bila diperlukan.
+        $trustedProxies = env('TRUSTED_PROXIES', '*');
+        $middleware->trustProxies(
+            at: $trustedProxies === '*' ? '*' : array_map('trim', explode(',', $trustedProxies))
+        );
+
         $middleware->alias([
             'tenant' => TenantMiddleware::class,
         ]);
