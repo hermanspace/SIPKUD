@@ -27,6 +27,7 @@
                         <flux:navlist.item icon="user" :href="route('anggota.index')" :current="request()->routeIs('anggota.*')" wire:navigate>{{ __('Anggota') }}</flux:navlist.item>
                         <flux:navlist.item icon="chart-pie" :href="route('akun.index')" :current="request()->routeIs('akun.*')" wire:navigate>{{ __('Akun (COA)') }}</flux:navlist.item>
                         <flux:navlist.item icon="briefcase" :href="route('unit-usaha.index')" :current="request()->routeIs('unit-usaha.*')" wire:navigate>{{ __('Unit Usaha') }}</flux:navlist.item>
+                        <flux:navlist.item icon="computer-desktop" :href="route('aset-tetap.index')" :current="request()->routeIs('aset-tetap.*')" wire:navigate>{{ __('Aset Tetap') }}</flux:navlist.item>
                         <flux:navlist.item icon="building-storefront" :href="route('sektor-usaha.index')" :current="request()->routeIs('sektor-usaha.*')" wire:navigate>{{ __('Sektor Usaha') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
@@ -57,6 +58,7 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
+                        <flux:navlist.item icon="archive-box" :href="route('laporan.tahunan')" :current="request()->routeIs('laporan.tahunan')" wire:navigate>{{ __('Laporan Tahunan') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 
@@ -81,6 +83,7 @@
                         <flux:navlist.item icon="user" :href="route('anggota.index')" :current="request()->routeIs('anggota.*')" wire:navigate>{{ __('Anggota') }}</flux:navlist.item>
                         <flux:navlist.item icon="chart-pie" :href="route('akun.index')" :current="request()->routeIs('akun.*')" wire:navigate>{{ __('Akun (COA)') }}</flux:navlist.item>
                         <flux:navlist.item icon="briefcase" :href="route('unit-usaha.index')" :current="request()->routeIs('unit-usaha.*')" wire:navigate>{{ __('Unit Usaha') }}</flux:navlist.item>
+                        <flux:navlist.item icon="computer-desktop" :href="route('aset-tetap.index')" :current="request()->routeIs('aset-tetap.*')" wire:navigate>{{ __('Aset Tetap') }}</flux:navlist.item>
                         <flux:navlist.item icon="building-storefront" :href="route('sektor-usaha.index')" :current="request()->routeIs('sektor-usaha.*')" wire:navigate>{{ __('Sektor Usaha') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
@@ -111,6 +114,7 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
+                        <flux:navlist.item icon="archive-box" :href="route('laporan.tahunan')" :current="request()->routeIs('laporan.tahunan')" wire:navigate>{{ __('Laporan Tahunan') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 
@@ -134,6 +138,7 @@
                         <flux:navlist.item icon="user" :href="route('anggota.index')" :current="request()->routeIs('anggota.*')" wire:navigate>{{ __('Anggota') }}</flux:navlist.item>
                         <flux:navlist.item icon="chart-pie" :href="route('akun.index')" :current="request()->routeIs('akun.*')" wire:navigate>{{ __('Akun (COA)') }}</flux:navlist.item>
                         <flux:navlist.item icon="briefcase" :href="route('unit-usaha.index')" :current="request()->routeIs('unit-usaha.*')" wire:navigate>{{ __('Unit Usaha') }}</flux:navlist.item>
+                        <flux:navlist.item icon="computer-desktop" :href="route('aset-tetap.index')" :current="request()->routeIs('aset-tetap.*')" wire:navigate>{{ __('Aset Tetap') }}</flux:navlist.item>
                         <flux:navlist.item icon="building-storefront" :href="route('sektor-usaha.index')" :current="request()->routeIs('sektor-usaha.*')" wire:navigate>{{ __('Sektor Usaha') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
@@ -165,6 +170,7 @@
                         <flux:navlist.item icon="scale" :href="route('laporan.perubahan-ekuitas')" :current="request()->routeIs('laporan.perubahan-ekuitas')" wire:navigate>{{ __('Perubahan Ekuitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="exclamation-triangle" :href="route('laporan.kolektibilitas')" :current="request()->routeIs('laporan.kolektibilitas')" wire:navigate>{{ __('Kolektibilitas') }}</flux:navlist.item>
                         <flux:navlist.item icon="document-text" :href="route('laporan.calk')" :current="request()->routeIs('laporan.calk')" wire:navigate>{{ __('CALK') }}</flux:navlist.item>
+                        <flux:navlist.item icon="archive-box" :href="route('laporan.tahunan')" :current="request()->routeIs('laporan.tahunan')" wire:navigate>{{ __('Laporan Tahunan') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 

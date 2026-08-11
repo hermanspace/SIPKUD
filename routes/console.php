@@ -16,6 +16,12 @@ Schedule::command('db:backup --keep=14')
     ->onOneServer()
     ->appendOutputTo(storage_path('logs/db-backup.log'));
 
+// Penyusutan aset tetap: tanggal 1 tiap bulan.
+Schedule::command('aset:penyusutan')
+    ->monthlyOn(1, '01:00')
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/aset-penyusutan.log'));
+
 // Verifikasi integritas akuntansi setiap malam.
 // Hasil ketidaksesuaian ditulis ke log (storage/logs) dan command exit code 1.
 Schedule::command('accounting:verify-integrity')

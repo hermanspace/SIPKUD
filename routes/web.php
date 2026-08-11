@@ -8,6 +8,7 @@ use App\Livewire\Laporan\Calk;
 use App\Livewire\Laporan\Kolektibilitas;
 use App\Livewire\Laporan\LabaRugi;
 use App\Livewire\Laporan\LaporanAkhirUsp;
+use App\Livewire\Laporan\LaporanTahunan;
 use App\Livewire\Laporan\LppUed;
 use App\Livewire\Laporan\Neraca;
 use App\Livewire\Laporan\NeracaSaldo;
@@ -119,6 +120,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('laporan/perubahan-ekuitas', PerubahanEkuitas::class)->name('laporan.perubahan-ekuitas');
         Route::get('laporan/kolektibilitas', Kolektibilitas::class)->name('laporan.kolektibilitas');
         Route::get('laporan/calk', Calk::class)->name('laporan.calk');
+        Route::get('laporan/tahunan', LaporanTahunan::class)->name('laporan.tahunan');
+        Route::get('aset-tetap', App\Livewire\MasterData\AsetTetap\Index::class)->name('aset-tetap.index');
 
         // Periode Akuntansi
         Route::get('periode', App\Livewire\Periode\Index::class)->name('periode.index');
