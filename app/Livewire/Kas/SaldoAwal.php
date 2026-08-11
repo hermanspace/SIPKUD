@@ -17,27 +17,33 @@ use Livewire\Component;
 class SaldoAwal extends Component
 {
     public $tanggal_saldo_awal;
+
     public $jumlah_saldo_awal;
+
     public $keterangan;
+
     public $akun_kas_id;
+
     public $akun_lawan_id;
+
     public $unit_usaha_id;
-    
+
     public $saldoAwalExists = false;
+
     public $saldoAwalId = null;
 
     public function mount(): void
     {
         // Hanya Admin Desa yang bisa input saldo awal
         Gate::authorize('admin_desa');
-        
+
         $user = Auth::user();
-        
+
         // Cek apakah sudah ada saldo awal untuk desa ini
         $saldoAwal = TransaksiKas::where('desa_id', $user->desa_id)
-                                  ->where('jenis_transaksi', 'saldo_awal')
-                                  ->first();
-        
+            ->where('jenis_transaksi', 'saldo_awal')
+            ->first();
+
         if ($saldoAwal) {
             $this->saldoAwalExists = true;
             $this->saldoAwalId = $saldoAwal->id;
@@ -54,7 +60,7 @@ class SaldoAwal extends Component
             // Default tanggal adalah hari ini
             $this->tanggal_saldo_awal = now()->format('Y-m-d');
             $this->keterangan = 'Saldo awal kas dari sistem manual';
-            
+
             // Default akun kas (ambil akun Kas pertama)
             $akunKas = Akun::aktif()
                 ->where('nama_akun', 'Kas')
@@ -62,7 +68,7 @@ class SaldoAwal extends Component
             if ($akunKas) {
                 $this->akun_kas_id = $akunKas->id;
             }
-            
+
             // Default akun lawan (ambil akun Modal pertama)
             $akunModal = Akun::aktif()
                 ->where('tipe_akun', 'ekuitas')
@@ -77,7 +83,7 @@ class SaldoAwal extends Component
     public function save(AccountingService $accountingService)
     {
         Gate::authorize('admin_desa');
-        
+
         $user = Auth::user();
 
         $jumlahResult = $this->normalizeJumlahSaldoAwal($this->jumlah_saldo_awal);
@@ -113,7 +119,7 @@ class SaldoAwal extends Component
                 if ($this->saldoAwalExists) {
                     // Update saldo awal yang sudah ada
                     $saldoAwal = TransaksiKas::find($this->saldoAwalId);
-                    
+
                     // Update transaksi kas
                     $saldoAwal->update([
                         'tanggal_transaksi' => $this->tanggal_saldo_awal,
@@ -123,7 +129,7 @@ class SaldoAwal extends Component
                         'akun_lawan_id' => $this->akun_lawan_id,
                         'unit_usaha_id' => $this->unit_usaha_id,
                     ]);
-                    
+
                     // Update jurnal jika ada (pakai method khusus saldo awal: boleh posted & abaikan periode closed)
                     if ($saldoAwal->jurnal) {
                         $accountingService->updateJurnalForSaldoAwal($saldoAwal->jurnal, [
@@ -186,7 +192,7 @@ class SaldoAwal extends Component
                         'akun_lawan_id' => $this->akun_lawan_id,
                         'jumlah' => $jumlahUntukSimpan,
                     ]);
-                    
+
                     // Auto-create jurnal
                     $accountingService->createJurnal([
                         'desa_id' => $user->desa_id,
@@ -220,7 +226,7 @@ class SaldoAwal extends Component
         } catch (ValidationException $e) {
             $this->dispatch('error', message: $e->getMessage());
         } catch (\Exception $e) {
-            $this->dispatch('error', message: 'Terjadi kesalahan: ' . $e->getMessage());
+            $this->dispatch('error', message: 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -257,12 +263,13 @@ class SaldoAwal extends Component
             $intPart = $parts[0];
             $decPart = '0';
         }
-        $decPart = substr($decPart . '00', 0, 2);
+        $decPart = substr($decPart.'00', 0, 2);
         $intPart = ltrim($intPart, '0') ?: '0';
         if (! ctype_digit($intPart) || strlen($intPart) > 15) {
             return null;
         }
-        $value = ($negatif ? '-' : '') . $intPart . '.' . $decPart;
+        $value = ($negatif ? '-' : '').$intPart.'.'.$decPart;
+
         return ['value' => $value, 'valid' => true];
     }
 
@@ -276,6 +283,7 @@ class SaldoAwal extends Component
             return '0';
         }
         $n = (float) $raw;
+
         return rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
     }
 
@@ -295,43 +303,45 @@ class SaldoAwal extends Component
         }
         $value = str_replace(',', '.', $value);
         if (! preg_match('/^(\d+)\.?(\d*)$/', $value, $m)) {
-            return $negatif ? '-' . $value : $value;
+            return $negatif ? '-'.$value : $value;
         }
         $intPart = $m[1];
-        $decPart = isset($m[2]) ? substr($m[2] . '00', 0, 2) : '00';
+        $decPart = isset($m[2]) ? substr($m[2].'00', 0, 2) : '00';
         $prefix = $negatif ? '-' : '';
         // Artefak float: .99 atau .01 pada bilangan besar -> bulatkan ke integer terdekat
         if (strlen($intPart) >= 2 && in_array($decPart, ['99', '01'], true)) {
             $int = (int) $intPart;
             $bulat = $decPart === '99' ? $int + 1 : $int;
-            return $prefix . (string) $bulat;
+
+            return $prefix.(string) $bulat;
         }
         if ($decPart === '00' || $decPart === '0') {
-            return $prefix . ltrim($intPart, '0') ?: '0';
+            return $prefix.ltrim($intPart, '0') ?: '0';
         }
-        return $prefix . ltrim($intPart, '0') . '.' . $decPart;
+
+        return $prefix.ltrim($intPart, '0').'.'.$decPart;
     }
 
     public function render()
     {
         $user = Auth::user();
-        
+
         $akunKas = Akun::aktif()
             ->where('tipe_akun', 'aset')
             ->whereIn('nama_akun', ['Kas', 'Bank', 'Kas Kecil'])
             ->orderBy('kode_akun')
             ->get();
-        
+
         $akunLawan = Akun::aktif()
             ->where('tipe_akun', 'ekuitas')
             ->orderBy('kode_akun')
             ->get();
-        
+
         $unitUsaha = UnitUsaha::where('desa_id', $user->desa_id)
             ->aktif()
             ->orderBy('nama_unit')
             ->get();
-        
+
         return view('livewire.kas.saldo-awal', [
             'akunKas' => $akunKas,
             'akunLawan' => $akunLawan,

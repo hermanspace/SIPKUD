@@ -13,8 +13,11 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $kode_akun = '';
+
     public string $nama_akun = '';
+
     public string $tipe_akun = 'aset';
+
     public string $status = 'aktif';
 
     public function mount(): void
@@ -53,4 +56,3 @@ class Create extends Component
         return view('livewire.master-data.akun.create');
     }
 }
-

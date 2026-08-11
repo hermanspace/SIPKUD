@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('jumlah', 15, 2);
             $table->text('keterangan')->nullable();
             $table->timestamps();
-            
+
             // Index untuk performa
             $table->index(['jurnal_id', 'akun_id']);
             $table->index('posisi');

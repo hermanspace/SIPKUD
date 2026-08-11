@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class DashboardPinjamanService
 {
     /**
-     * @param Builder<Pinjaman>|null $pinjamanQuery Base query pinjaman (sudah di-scope desa/kecamatan). Null = semua.
+     * @param  Builder<Pinjaman>|null  $pinjamanQuery  Base query pinjaman (sudah di-scope desa/kecamatan). Null = semua.
      * @return array<string, mixed>
      */
     public function getStatistik(?Builder $pinjamanQuery = null): array
@@ -85,7 +85,7 @@ class DashboardPinjamanService
                 if ($jatuhTempo->gt($today)) {
                     break;
                 }
-                if (!$sudahDibayarPerKe->has($ke)) {
+                if (! $sudahDibayarPerKe->has($ke)) {
                     $tunggakanPinjaman += $angsuranPerBulan;
                     $punyaJatuhTempo = true;
                 }
@@ -131,7 +131,8 @@ class DashboardPinjamanService
     /**
      * Statistik pinjaman per sektor usaha (jenis usaha).
      * Menggunakan whereIn(id) agar join dengan sektor_usaha tidak ambigu (keduanya punya desa_id).
-     * @param Builder<Pinjaman>|null $pinjamanQuery
+     *
+     * @param  Builder<Pinjaman>|null  $pinjamanQuery
      * @return array<int, array{nama: string, orang: int, rupiah: float}>
      */
     public function getStatistikPerSektor(?Builder $pinjamanQuery = null): array
@@ -168,7 +169,8 @@ class DashboardPinjamanService
 
     /**
      * Total orang dan rupiah untuk tabel sektor (untuk baris Jumlah).
-     * @param Builder<Pinjaman>|null $pinjamanQuery
+     *
+     * @param  Builder<Pinjaman>|null  $pinjamanQuery
      * @return array{orang: int, rupiah: float}
      */
     public function getTotalUntukSektor(?Builder $pinjamanQuery = null): array

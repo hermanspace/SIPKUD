@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model UnitUsaha
- * 
+ *
  * Representasi unit usaha dalam BUM Desa
  * Contoh: USP (Unit Simpan Pinjam), UED-SP, Unit Perdagangan, dll
  * Setiap unit usaha memiliki laporan keuangan terpisah

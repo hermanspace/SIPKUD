@@ -39,12 +39,12 @@ class SektorUsahaSeeder extends Seeder
                         'nama' => $nama,
                     ],
                     [
-                        'keterangan' => 'Sektor ' . $nama . ' untuk pinjaman anggota',
+                        'keterangan' => 'Sektor '.$nama.' untuk pinjaman anggota',
                         'status' => 'aktif',
                     ]
                 );
             }
-            $this->command->info('✓ Sektor usaha Desa Kelapapati: ' . count($this->namaSektorDefault) . ' sektor.');
+            $this->command->info('✓ Sektor usaha Desa Kelapapati: '.count($this->namaSektorDefault).' sektor.');
         }
 
         // Opsional: seed sektor untuk beberapa desa pertama (untuk konsistensi)
@@ -67,7 +67,7 @@ class SektorUsahaSeeder extends Seeder
         }
 
         if ($desaLain->isNotEmpty()) {
-            $this->command->info('✓ Sektor usaha untuk ' . $desaLain->count() . ' desa tambahan.');
+            $this->command->info('✓ Sektor usaha untuk '.$desaLain->count().' desa tambahan.');
         }
     }
 }

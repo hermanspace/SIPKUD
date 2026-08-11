@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Model Kecamatan
- * 
+ *
  * Master data untuk kecamatan (sub-district)
  * Digunakan untuk mengelompokkan desa berdasarkan wilayah administratif
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas

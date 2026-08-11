@@ -2,6 +2,7 @@
 
 namespace App\Livewire\MasterData\SektorUsaha;
 
+use App\Models\Desa;
 use App\Models\SektorUsaha;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -15,11 +16,14 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $desaFilter = null;
 
     /** Form tambah baru */
     public string $nama = '';
+
     public string $keterangan = '';
 
     protected $queryString = [
@@ -94,6 +98,7 @@ class Index extends Component
         $count = $sektor->pinjaman()->count();
         if ($count > 0) {
             $this->dispatch('error', message: "Tidak dapat menghapus. Sektor ini digunakan oleh {$count} pinjaman.");
+
             return;
         }
 
@@ -108,8 +113,8 @@ class Index extends Component
         $query = SektorUsaha::withCount('pinjaman')
             ->with('desa')
             ->when($this->search, fn ($q) => $q->where(function ($q) {
-                $q->where('nama', 'like', '%' . $this->search . '%')
-                    ->orWhere('keterangan', 'like', '%' . $this->search . '%');
+                $q->where('nama', 'like', '%'.$this->search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$this->search.'%');
             }))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->desaFilter, fn ($q) => $q->where('desa_id', $this->desaFilter))
@@ -117,9 +122,9 @@ class Index extends Component
 
         $desa = collect();
         if ($user && $user->isSuperAdmin()) {
-            $desa = \App\Models\Desa::aktif()->orderBy('nama_desa')->get();
+            $desa = Desa::aktif()->orderBy('nama_desa')->get();
         } elseif ($user && $user->isAdminKecamatan()) {
-            $desa = \App\Models\Desa::where('kecamatan_id', $user->kecamatan_id)->aktif()->orderBy('nama_desa')->get();
+            $desa = Desa::where('kecamatan_id', $user->kecamatan_id)->aktif()->orderBy('nama_desa')->get();
         }
 
         return view('livewire.master-data.sektor-usaha.index', [

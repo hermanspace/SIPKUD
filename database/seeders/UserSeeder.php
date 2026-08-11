@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Desa;
+use App\Models\Kecamatan;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -28,12 +29,12 @@ class UserSeeder extends Seeder
         );
 
         // Create Admin Kecamatan for kecamatan 1
-        $firstKecamatan = \App\Models\Kecamatan::find(1);
+        $firstKecamatan = Kecamatan::find(1);
         if ($firstKecamatan) {
             User::firstOrCreate(
                 ['email' => 'adminkecamatan@sipkud.local'],
                 [
-                    'nama' => 'Admin Kecamatan ' . $firstKecamatan->nama_kecamatan,
+                    'nama' => 'Admin Kecamatan '.$firstKecamatan->nama_kecamatan,
                     'email' => 'adminkecamatan@sipkud.local',
                     'password' => Hash::make('password'),
                     'role' => 'admin_kecamatan',
@@ -45,14 +46,14 @@ class UserSeeder extends Seeder
 
         // Create Admin Desa for several desa (ambil dari beberapa kecamatan berbeda)
         $desa = Desa::whereIn('kecamatan_id', [1, 2, 3, 4, 5])->take(5)->get();
-        
+
         if ($desa->count() > 0) {
             foreach ($desa as $index => $d) {
-                $email = 'admin' . ($index + 1) . '@sipkud.local';
+                $email = 'admin'.($index + 1).'@sipkud.local';
                 User::firstOrCreate(
                     ['email' => $email],
                     [
-                        'nama' => 'Admin Desa ' . $d->nama_desa,
+                        'nama' => 'Admin Desa '.$d->nama_desa,
                         'email' => $email,
                         'password' => Hash::make('password'),
                         'role' => 'admin_desa',

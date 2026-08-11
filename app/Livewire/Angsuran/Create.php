@@ -4,6 +4,7 @@ namespace App\Livewire\Angsuran;
 
 use App\Models\AngsuranPinjaman;
 use App\Models\Pinjaman;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,18 +14,24 @@ use Livewire\Component;
 class Create extends Component
 {
     public ?int $pinjaman_id = null;
+
     public string $tanggal_bayar = '';
+
     public string $angsuran_ke = '';
+
     public string $pokok_dibayar = '';
+
     public string $jasa_dibayar = '';
+
     public string $denda_dibayar = '0';
+
     public string $total_dibayar = '0';
 
     public function mount(): void
     {
         // Hanya Admin Desa yang bisa membuat angsuran
         Gate::authorize('admin_desa');
-        
+
         // Set default tanggal ke hari ini
         $this->tanggal_bayar = now()->format('Y-m-d');
     }
@@ -49,7 +56,7 @@ class Create extends Component
         $pokok = (float) ($this->pokok_dibayar ?: 0);
         $jasa = (float) ($this->jasa_dibayar ?: 0);
         $denda = (float) ($this->denda_dibayar ?: 0);
-        
+
         $this->total_dibayar = (string) ($pokok + $jasa + $denda);
     }
 
@@ -86,32 +93,34 @@ class Create extends Component
 
         // Validasi: Tidak boleh input angsuran ke pinjaman LUNAS
         $pinjaman = Pinjaman::findOrFail($validated['pinjaman_id']);
-        
+
         // Gunakan status yang dihitung dari sisa pinjaman
         $statusCalculated = $pinjaman->status_pinjaman_calculated;
         if ($statusCalculated === 'lunas') {
             $this->addError('pinjaman_id', 'Tidak dapat menambah angsuran untuk pinjaman yang sudah lunas.');
+
             return;
         }
 
         // Validasi: Pokok dibayar tidak boleh melebihi sisa pinjaman
         $sisaPinjaman = $pinjaman->sisa_pinjaman;
         $pokokDibayar = (float) $validated['pokok_dibayar'];
-        
+
         if ($pokokDibayar > $sisaPinjaman) {
-            $this->addError('pokok_dibayar', 'Pokok dibayar tidak boleh melebihi sisa pinjaman (Rp ' . number_format($sisaPinjaman, 0, ',', '.') . ').');
+            $this->addError('pokok_dibayar', 'Pokok dibayar tidak boleh melebihi sisa pinjaman (Rp '.number_format($sisaPinjaman, 0, ',', '.').').');
+
             return;
         }
 
         // Hitung total dibayar
         $validated['total_dibayar'] = $pokokDibayar + (float) $validated['jasa_dibayar'] + (float) $validated['denda_dibayar'];
-        
+
         // Convert to proper types
         $validated['pokok_dibayar'] = $pokokDibayar;
         $validated['jasa_dibayar'] = (float) $validated['jasa_dibayar'];
         $validated['denda_dibayar'] = (float) $validated['denda_dibayar'];
         $validated['angsuran_ke'] = (int) $validated['angsuran_ke'];
-        $validated['tanggal_bayar'] = \Carbon\Carbon::parse($validated['tanggal_bayar']);
+        $validated['tanggal_bayar'] = Carbon::parse($validated['tanggal_bayar']);
 
         AngsuranPinjaman::create($validated);
 
@@ -122,7 +131,7 @@ class Create extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Get pinjaman aktif untuk dropdown
         $pinjamanQuery = Pinjaman::aktif()->with('anggota');
         if ($user && $user->desa_id) {

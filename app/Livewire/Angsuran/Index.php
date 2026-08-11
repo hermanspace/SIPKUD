@@ -4,6 +4,8 @@ namespace App\Livewire\Angsuran;
 
 use App\Exports\AngsuranExport;
 use App\Models\AngsuranPinjaman;
+use App\Models\Desa;
+use App\Models\Kecamatan;
 use App\Models\Pinjaman;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -19,8 +21,11 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $pinjamanFilter = null;
+
     public ?int $kecamatanFilter = null;
+
     public ?int $desaFilter = null;
 
     protected $queryString = [
@@ -62,62 +67,62 @@ class Index extends Component
     {
         // Hanya Admin Desa yang bisa menghapus angsuran
         $user = Auth::user();
-        if (!$user || !$user->isAdminDesa()) {
+        if (! $user || ! $user->isAdminDesa()) {
             abort(403, 'Anda tidak memiliki izin untuk menghapus angsuran.');
         }
-        
+
         $angsuran = AngsuranPinjaman::findOrFail($angsuranId);
         $angsuran->delete();
-        
+
         $this->dispatch('success', message: 'Angsuran berhasil dihapus.');
     }
 
     public function exportExcel(): StreamedResponse
     {
         $angsuran = $this->getAngsuranQuery()->get();
-        
+
         $kecamatanNama = null;
         $desaNama = null;
         $pinjamanNomor = null;
-        
+
         if ($this->kecamatanFilter) {
-            $kecamatan = \App\Models\Kecamatan::find($this->kecamatanFilter);
+            $kecamatan = Kecamatan::find($this->kecamatanFilter);
             $kecamatanNama = $kecamatan?->nama_kecamatan;
         }
-        
+
         if ($this->desaFilter) {
-            $desa = \App\Models\Desa::find($this->desaFilter);
+            $desa = Desa::find($this->desaFilter);
             $desaNama = $desa?->nama_desa;
         }
-        
+
         if ($this->pinjamanFilter) {
             $pinjaman = Pinjaman::find($this->pinjamanFilter);
             $pinjamanNomor = $pinjaman?->nomor_pinjaman;
         }
-        
+
         $export = new AngsuranExport(
             $angsuran,
             $kecamatanNama,
             $desaNama,
             $pinjamanNomor
         );
-        
-        $fileName = 'master-angsuran-' . now()->format('Y-m-d-His') . '.xlsx';
-        $tempFile = storage_path('app/temp/' . $fileName);
-        
+
+        $fileName = 'master-angsuran-'.now()->format('Y-m-d-His').'.xlsx';
+        $tempFile = storage_path('app/temp/'.$fileName);
+
         // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
+        if (! file_exists(storage_path('app/temp'))) {
             mkdir(storage_path('app/temp'), 0755, true);
         }
-        
+
         $export->export($tempFile);
-        
+
         return response()->stream(function () use ($tempFile) {
             echo file_get_contents($tempFile);
             unlink($tempFile);
         }, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
         ]);
     }
 
@@ -125,26 +130,26 @@ class Index extends Component
     {
         $angsuran = $this->getAngsuranQuery()->get();
         $user = Auth::user();
-        
+
         $kecamatanNama = null;
         $desaNama = null;
         $pinjamanNomor = null;
-        
+
         if ($this->kecamatanFilter) {
-            $kecamatan = \App\Models\Kecamatan::find($this->kecamatanFilter);
+            $kecamatan = Kecamatan::find($this->kecamatanFilter);
             $kecamatanNama = $kecamatan?->nama_kecamatan;
         }
-        
+
         if ($this->desaFilter) {
-            $desa = \App\Models\Desa::find($this->desaFilter);
+            $desa = Desa::find($this->desaFilter);
             $desaNama = $desa?->nama_desa;
         }
-        
+
         if ($this->pinjamanFilter) {
             $pinjaman = Pinjaman::find($this->pinjamanFilter);
             $pinjamanNomor = $pinjaman?->nomor_pinjaman;
         }
-        
+
         $pdf = Pdf::loadView('pdf.master-angsuran', [
             'angsuran' => $angsuran,
             'kecamatanNama' => $kecamatanNama,
@@ -152,9 +157,9 @@ class Index extends Component
             'pinjamanNomor' => $pinjamanNomor,
             'user' => $user,
         ])->setPaper('a4', 'landscape');
-        
-        $fileName = 'master-angsuran-' . now()->format('Y-m-d-His') . '.pdf';
-        
+
+        $fileName = 'master-angsuran-'.now()->format('Y-m-d-His').'.pdf';
+
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, $fileName);
@@ -166,9 +171,9 @@ class Index extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('pinjaman', function ($q) {
-                        $q->where('nomor_pinjaman', 'like', '%' . $this->search . '%')
+                        $q->where('nomor_pinjaman', 'like', '%'.$this->search.'%')
                             ->orWhereHas('anggota', function ($q) {
-                                $q->where('nama', 'like', '%' . $this->search . '%');
+                                $q->where('nama', 'like', '%'.$this->search.'%');
                             });
                     });
                 });
@@ -193,14 +198,14 @@ class Index extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         $query = AngsuranPinjaman::with(['pinjaman.anggota', 'pinjaman.desa.kecamatan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('pinjaman', function ($q) {
-                        $q->where('nomor_pinjaman', 'like', '%' . $this->search . '%')
+                        $q->where('nomor_pinjaman', 'like', '%'.$this->search.'%')
                             ->orWhereHas('anggota', function ($q) {
-                                $q->where('nama', 'like', '%' . $this->search . '%');
+                                $q->where('nama', 'like', '%'.$this->search.'%');
                             });
                     });
                 });
@@ -238,17 +243,17 @@ class Index extends Component
         // Get kecamatan and desa for filters
         $kecamatan = collect();
         $desa = collect();
-        
+
         if ($user && $user->isSuperAdmin()) {
-            $kecamatan = \App\Models\Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
+            $kecamatan = Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
             if ($this->kecamatanFilter) {
-                $desa = \App\Models\Desa::where('kecamatan_id', $this->kecamatanFilter)
+                $desa = Desa::where('kecamatan_id', $this->kecamatanFilter)
                     ->aktif()
                     ->orderBy('nama_desa')
                     ->get();
             }
         } elseif ($user && $user->isAdminKecamatan()) {
-            $desa = \App\Models\Desa::where('kecamatan_id', $user->kecamatan_id)
+            $desa = Desa::where('kecamatan_id', $user->kecamatan_id)
                 ->aktif()
                 ->orderBy('nama_desa')
                 ->get();

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Jurnal
- * 
+ *
  * Header jurnal untuk mencatat transaksi akuntansi
  * Prinsip: Debit = Kredit (double entry)
  * Sumber: Kas Harian atau Buku Memorial
@@ -57,7 +57,7 @@ class Jurnal extends Model
         parent::boot();
 
         static::creating(function ($jurnal) {
-            if (!$jurnal->nomor_jurnal) {
+            if (! $jurnal->nomor_jurnal) {
                 $jurnal->nomor_jurnal = static::generateNomorJurnal($jurnal->desa_id);
             }
         });
@@ -69,7 +69,7 @@ class Jurnal extends Model
                     app(AccountingService::class)->postToLedger($jurnal);
                 } catch (\Exception $e) {
                     // Log error but don't fail the update
-                    \Log::error('Failed to auto-post jurnal to ledger: ' . $e->getMessage(), [
+                    \Log::error('Failed to auto-post jurnal to ledger: '.$e->getMessage(), [
                         'jurnal_id' => $jurnal->id,
                         'error' => $e->getMessage(),
                     ]);
@@ -86,7 +86,7 @@ class Jurnal extends Model
     {
         $tahun = now()->format('Y');
         $bulan = now()->format('m');
-        
+
         // Tanpa global scope & termasuk soft-deleted: penomoran harus konsisten
         // untuk desa yang sama siapa pun user yang membuat jurnal
         $lastJurnal = static::withoutGlobalScopes()
@@ -96,9 +96,9 @@ class Jurnal extends Model
             ->whereMonth('created_at', $bulan)
             ->orderBy('id', 'desc')
             ->first();
-        
+
         $urutan = $lastJurnal ? (int) substr($lastJurnal->nomor_jurnal, -5) + 1 : 1;
-        
+
         return sprintf('JRN/%s/%s/%05d', $tahun, $bulan, $urutan);
     }
 
@@ -188,7 +188,7 @@ class Jurnal extends Model
     public function scopePeriode($query, $bulan, $tahun)
     {
         return $query->whereMonth('tanggal_transaksi', $bulan)
-                     ->whereYear('tanggal_transaksi', $tahun);
+            ->whereYear('tanggal_transaksi', $tahun);
     }
 
     /**

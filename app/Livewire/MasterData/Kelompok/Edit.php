@@ -12,15 +12,18 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Kelompok $kelompok;
+
     public string $nama_kelompok = '';
+
     public ?string $keterangan = null;
+
     public string $status = 'aktif';
 
     public function mount(Kelompok $kelompok): void
     {
         // Hanya Admin Desa yang bisa mengedit kelompok
         Gate::authorize('admin_desa');
-        
+
         $this->kelompok = $kelompok;
         $this->nama_kelompok = $kelompok->nama_kelompok;
         $this->keterangan = $kelompok->keterangan;
@@ -31,7 +34,7 @@ class Edit extends Component
     {
         // Pastikan hanya admin desa yang bisa mengupdate kelompok
         Gate::authorize('admin_desa');
-        
+
         $validated = $this->validate([
             'nama_kelompok' => ['required', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string'],
@@ -55,4 +58,3 @@ class Edit extends Component
         return view('livewire.master-data.kelompok.edit');
     }
 }
-

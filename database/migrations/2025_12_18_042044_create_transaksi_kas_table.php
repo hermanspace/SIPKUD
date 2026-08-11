@@ -18,15 +18,15 @@ return new class extends Migration
             $table->text('uraian');
             $table->enum('jenis_transaksi', ['masuk', 'keluar']);
             $table->decimal('jumlah', 15, 2);
-            
+
             // Relasi ke pinjaman (untuk kas keluar)
             $table->foreignId('pinjaman_id')->nullable()->constrained('pinjaman')->cascadeOnDelete();
-            
+
             // Relasi ke angsuran (untuk kas masuk)
             $table->foreignId('angsuran_pinjaman_id')->nullable()->constrained('angsuran_pinjaman')->cascadeOnDelete();
-            
+
             $table->timestamps();
-            
+
             // Index untuk performa
             $table->index(['desa_id', 'tanggal_transaksi']);
             $table->index('jenis_transaksi');

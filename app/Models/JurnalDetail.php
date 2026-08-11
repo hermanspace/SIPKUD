@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Model JurnalDetail
- * 
+ *
  * Detail jurnal (baris debit/kredit)
  * Setiap jurnal minimal memiliki 2 baris (1 debit, 1 kredit)
  */

@@ -12,15 +12,19 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Desa $desa;
+
     public string $nama_desa = '';
+
     public string $kode_desa = '';
+
     public ?int $kecamatan_id = null;
+
     public string $status = 'aktif';
 
     public function mount(Desa $desa): void
     {
         Gate::authorize('super_admin');
-        
+
         $this->desa = $desa;
         $this->nama_desa = $desa->nama_desa;
         $this->kode_desa = $desa->kode_desa;
@@ -32,7 +36,7 @@ class Edit extends Component
     {
         $validated = $this->validate([
             'nama_desa' => ['required', 'string', 'max:255'],
-            'kode_desa' => ['required', 'string', 'max:50', 'unique:desa,kode_desa,' . $this->desa->id],
+            'kode_desa' => ['required', 'string', 'max:50', 'unique:desa,kode_desa,'.$this->desa->id],
             'kecamatan_id' => ['required', 'exists:kecamatan,id'],
             'status' => ['required', 'in:aktif,nonaktif'],
         ], [

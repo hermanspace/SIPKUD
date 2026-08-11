@@ -15,7 +15,9 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $kecamatanFilter = null;
 
     protected $queryString = [
@@ -54,13 +56,22 @@ class Index extends Component
 
         if ($hasKelompok || $hasAnggota || $hasAkun || $hasUsers) {
             $messages = [];
-            if ($hasKelompok) $messages[] = 'kelompok';
-            if ($hasAnggota) $messages[] = 'anggota';
-            if ($hasAkun) $messages[] = 'akun';
-            if ($hasUsers) $messages[] = 'pengguna';
-            
-            $message = 'Tidak dapat menghapus desa yang memiliki data terkait: ' . implode(', ', $messages) . '.';
+            if ($hasKelompok) {
+                $messages[] = 'kelompok';
+            }
+            if ($hasAnggota) {
+                $messages[] = 'anggota';
+            }
+            if ($hasAkun) {
+                $messages[] = 'akun';
+            }
+            if ($hasUsers) {
+                $messages[] = 'pengguna';
+            }
+
+            $message = 'Tidak dapat menghapus desa yang memiliki data terkait: '.implode(', ', $messages).'.';
             $this->dispatch('error', message: $message);
+
             return;
         }
 
@@ -73,8 +84,8 @@ class Index extends Component
         $query = Desa::with('kecamatan')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama_desa', 'like', '%' . $this->search . '%')
-                        ->orWhere('kode_desa', 'like', '%' . $this->search . '%');
+                    $q->where('nama_desa', 'like', '%'.$this->search.'%')
+                        ->orWhere('kode_desa', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->statusFilter, function ($query) {

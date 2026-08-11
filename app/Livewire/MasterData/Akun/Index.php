@@ -3,7 +3,6 @@
 namespace App\Livewire\MasterData\Akun;
 
 use App\Models\Akun;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -15,7 +14,9 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?string $tipeFilter = null;
+
     public string $statusFilter = '';
 
     protected $queryString = [
@@ -49,13 +50,13 @@ class Index extends Component
     public function delete(int $akunId): void
     {
         Gate::authorize('manage_akun');
-        
+
         $akun = Akun::findOrFail($akunId);
-        
+
         // Catatan: Di fase selanjutnya, akan ada relasi ke modul Jurnal
         // Jika akun sudah digunakan dalam jurnal, tidak boleh dihapus
         // Untuk sekarang, akun bisa dihapus karena belum ada relasi ke modul lain
-        
+
         $akun->delete();
         $this->dispatch('success', message: 'Akun berhasil dihapus.');
     }
@@ -63,11 +64,11 @@ class Index extends Component
     public function render()
     {
         $query = Akun::when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('kode_akun', 'like', '%' . $this->search . '%')
-                        ->orWhere('nama_akun', 'like', '%' . $this->search . '%');
-                });
-            })
+            $query->where(function ($q) {
+                $q->where('kode_akun', 'like', '%'.$this->search.'%')
+                    ->orWhere('nama_akun', 'like', '%'.$this->search.'%');
+            });
+        })
             ->when($this->tipeFilter, function ($query) {
                 $query->where('tipe_akun', $this->tipeFilter);
             })
@@ -81,4 +82,3 @@ class Index extends Component
         ]);
     }
 }
-

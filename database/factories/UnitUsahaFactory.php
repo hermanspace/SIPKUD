@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Desa;
+use App\Models\UnitUsaha;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UnitUsaha>
+ * @extends Factory<UnitUsaha>
  */
 class UnitUsahaFactory extends Factory
 {

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasDesaScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TransaksiKas extends Model
 {
@@ -83,7 +84,7 @@ class TransaksiKas extends Model
     /**
      * Relasi ke Jurnal (one to one)
      */
-    public function jurnal(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function jurnal(): HasOne
     {
         return $this->hasOne(Jurnal::class);
     }

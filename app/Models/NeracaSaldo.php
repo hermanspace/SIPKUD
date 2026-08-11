@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Model NeracaSaldo
- * 
+ *
  * Menyimpan saldo per akun per periode (YYYY-MM)
  * Mendukung closing periode untuk audit trail
- * 
+ *
  * Note: Tidak menggunakan SoftDeletes karena data ini adalah audit trail
  * yang tidak boleh dihapus
  */
 class NeracaSaldo extends Model
 {
-    use HasFactory, HasDesaScope;
+    use HasDesaScope, HasFactory;
 
     protected $table = 'neraca_saldo';
 

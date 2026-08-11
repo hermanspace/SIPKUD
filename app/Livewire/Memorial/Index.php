@@ -16,23 +16,26 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+
     public $unitFilter = '';
+
     public $statusFilter = '';
+
     public ?int $selectedDesaId = null;
 
     public function mount(): void
     {
         Gate::authorize('view_desa_data');
-        
+
         $user = Auth::user();
-        
+
         // Set default selectedDesaId untuk user yang punya desa_id
-        if ($user->desa_id && !$this->selectedDesaId) {
+        if ($user->desa_id && ! $this->selectedDesaId) {
             $this->selectedDesaId = $user->desa_id;
         }
-        
+
         // Untuk Super Admin dan Admin Kecamatan, set ke desa pertama yang dapat diakses
-        if (!$this->selectedDesaId) {
+        if (! $this->selectedDesaId) {
             $accessibleDesas = $user->getAccessibleDesas();
             if ($accessibleDesas->isNotEmpty()) {
                 $this->selectedDesaId = $accessibleDesas->first()->id;
@@ -43,12 +46,12 @@ class Index extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Get list desa yang dapat diakses
         $accessibleDesas = $user->getAccessibleDesas();
-        
+
         // Validasi selectedDesaId
-        if (!$this->selectedDesaId || !$user->canAccessDesa($this->selectedDesaId)) {
+        if (! $this->selectedDesaId || ! $user->canAccessDesa($this->selectedDesaId)) {
             return view('livewire.memorial.index', [
                 'jurnal' => collect([]),
                 'units' => collect([]),
@@ -56,39 +59,39 @@ class Index extends Component
                 'error' => 'Silakan pilih desa untuk melihat buku memorial.',
             ]);
         }
-        
+
         $query = Jurnal::query()
             ->with(['unitUsaha', 'details.akun', 'creator'])
             ->where('desa_id', $this->selectedDesaId)
             ->where('jenis_jurnal', 'umum');
-        
+
         // Filter search
         if ($this->search) {
-            $query->where(function($q) {
-                $q->where('nomor_jurnal', 'like', '%' . $this->search . '%')
-                  ->orWhere('uraian', 'like', '%' . $this->search . '%');
+            $query->where(function ($q) {
+                $q->where('nomor_jurnal', 'like', '%'.$this->search.'%')
+                    ->orWhere('uraian', 'like', '%'.$this->search.'%');
             });
         }
-        
+
         // Filter unit usaha
         if ($this->unitFilter) {
             $query->where('unit_usaha_id', $this->unitFilter);
         }
-        
+
         // Filter status
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);
         }
-        
+
         $jurnal = $query->orderBy('tanggal_jurnal', 'desc')
-                        ->orderBy('id', 'desc')
-                        ->paginate(20);
-        
+            ->orderBy('id', 'desc')
+            ->paginate(20);
+
         $units = UnitUsaha::where('desa_id', $this->selectedDesaId)
-                          ->aktif()
-                          ->orderBy('nama_unit')
-                          ->get();
-        
+            ->aktif()
+            ->orderBy('nama_unit')
+            ->get();
+
         return view('livewire.memorial.index', [
             'jurnal' => $jurnal,
             'units' => $units,
@@ -99,55 +102,61 @@ class Index extends Component
     public function delete($id): void
     {
         $user = Auth::user();
-        
+
         // Hanya Super Admin dan Admin Desa yang boleh hapus
-        if (!$user->isSuperAdmin() && !$user->isAdminDesa()) {
+        if (! $user->isSuperAdmin() && ! $user->isAdminDesa()) {
             $this->dispatch('error', message: 'Anda tidak memiliki akses untuk menghapus jurnal.');
+
             return;
         }
-        
+
         $jurnal = Jurnal::findOrFail($id);
-        
+
         // Validasi akses ke desa
-        if (!$user->canAccessDesa($jurnal->desa_id)) {
+        if (! $user->canAccessDesa($jurnal->desa_id)) {
             $this->dispatch('error', message: 'Anda tidak memiliki akses ke desa ini.');
+
             return;
         }
-        
+
         // Validasi: hanya draft yang bisa dihapus
         if ($jurnal->status !== 'draft') {
             $this->dispatch('error', message: 'Hanya jurnal draft yang dapat dihapus.');
+
             return;
         }
-        
+
         $jurnal->delete();
         $this->dispatch('success', message: 'Jurnal memorial berhasil dihapus.');
     }
-    
+
     public function void($id): void
     {
         $user = Auth::user();
-        
+
         // Hanya Super Admin dan Admin Desa yang boleh void
-        if (!$user->isSuperAdmin() && !$user->isAdminDesa()) {
+        if (! $user->isSuperAdmin() && ! $user->isAdminDesa()) {
             $this->dispatch('error', message: 'Anda tidak memiliki akses untuk void jurnal.');
+
             return;
         }
-        
+
         $jurnal = Jurnal::findOrFail($id);
-        
+
         // Validasi akses ke desa
-        if (!$user->canAccessDesa($jurnal->desa_id)) {
+        if (! $user->canAccessDesa($jurnal->desa_id)) {
             $this->dispatch('error', message: 'Anda tidak memiliki akses ke desa ini.');
+
             return;
         }
-        
+
         // Validasi: hanya posted yang bisa di-void
         if ($jurnal->status !== 'posted') {
             $this->dispatch('error', message: 'Hanya jurnal posted yang dapat di-void.');
+
             return;
         }
-        
+
         $jurnal->update(['status' => 'void']);
         $this->dispatch('success', message: 'Jurnal memorial berhasil di-void.');
     }

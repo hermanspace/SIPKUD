@@ -11,14 +11,17 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Kecamatan $kecamatan;
+
     public string $nama_kecamatan = '';
+
     public string $kode_kecamatan = '';
+
     public string $status = 'aktif';
 
     public function mount(Kecamatan $kecamatan): void
     {
         Gate::authorize('super_admin');
-        
+
         $this->kecamatan = $kecamatan;
         $this->nama_kecamatan = $kecamatan->nama_kecamatan;
         $this->kode_kecamatan = $kecamatan->kode_kecamatan;
@@ -29,7 +32,7 @@ class Edit extends Component
     {
         $validated = $this->validate([
             'nama_kecamatan' => ['required', 'string', 'max:255'],
-            'kode_kecamatan' => ['required', 'string', 'max:50', 'unique:kecamatan,kode_kecamatan,' . $this->kecamatan->id],
+            'kode_kecamatan' => ['required', 'string', 'max:50', 'unique:kecamatan,kode_kecamatan,'.$this->kecamatan->id],
             'status' => ['required', 'in:aktif,nonaktif'],
         ], [
             'nama_kecamatan.required' => 'Nama kecamatan wajib diisi.',

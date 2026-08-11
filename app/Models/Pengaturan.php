@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model Pengaturan
- * 
+ *
  * Sistem pengaturan global untuk aplikasi SIPKUD
  * Hanya dapat diedit oleh Super Admin
  * Data digunakan untuk konfigurasi tampilan dan informasi instansi
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas

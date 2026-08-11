@@ -5,6 +5,7 @@ namespace App\Livewire\Pinjaman;
 use App\Models\Anggota;
 use App\Models\Pinjaman;
 use App\Models\SektorUsaha;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,22 +15,30 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Pinjaman $pinjaman;
+
     public ?int $anggota_id = null;
+
     public ?int $sektor_usaha_id = null;
+
     public string $tanggal_pinjaman = '';
+
     public string $jumlah_pinjaman = '';
+
     public string $jangka_waktu_bulan = '';
+
     public string $jasa_persen = '';
+
     public string $status_pinjaman = 'aktif';
 
     public bool $show_new_sektor = false;
+
     public string $new_sektor_nama = '';
 
     public function mount(Pinjaman $pinjaman): void
     {
         // Hanya Admin Desa yang bisa mengedit pinjaman
         Gate::authorize('admin_desa');
-        
+
         $this->pinjaman = $pinjaman;
         $this->anggota_id = $pinjaman->anggota_id;
         $this->sektor_usaha_id = $pinjaman->sektor_usaha_id;
@@ -44,7 +53,7 @@ class Edit extends Component
     {
         // Pastikan hanya admin desa yang bisa mengupdate pinjaman
         Gate::authorize('admin_desa');
-        
+
         $validated = $this->validate([
             'anggota_id' => ['required', 'exists:anggota,id'],
             'sektor_usaha_id' => ['nullable', 'exists:sektor_usaha,id'],
@@ -76,6 +85,7 @@ class Edit extends Component
         $anggota = Anggota::findOrFail($validated['anggota_id']);
         if ($anggota->status !== 'aktif') {
             $this->addError('anggota_id', 'Anggota yang dipilih tidak aktif.');
+
             return;
         }
 
@@ -85,9 +95,10 @@ class Edit extends Component
             ->where('status_pinjaman', 'aktif')
             ->where('id', '!=', $this->pinjaman->id)
             ->exists();
-        
+
         if ($pinjamanAktif && $validated['status_pinjaman'] === 'aktif') {
             $this->addError('anggota_id', 'Anggota ini sudah memiliki pinjaman aktif lainnya.');
+
             return;
         }
 
@@ -97,7 +108,7 @@ class Edit extends Component
         $validated['jumlah_pinjaman'] = (float) $validated['jumlah_pinjaman'];
         $validated['jangka_waktu_bulan'] = (int) $validated['jangka_waktu_bulan'];
         $validated['jasa_persen'] = (float) $validated['jasa_persen'];
-        $validated['tanggal_pinjaman'] = \Carbon\Carbon::parse($validated['tanggal_pinjaman']);
+        $validated['tanggal_pinjaman'] = Carbon::parse($validated['tanggal_pinjaman']);
 
         $this->pinjaman->update($validated);
 
@@ -136,7 +147,7 @@ class Edit extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Get anggota aktif untuk dropdown
         $anggotaQuery = Anggota::aktif();
         if ($user && $user->desa_id) {

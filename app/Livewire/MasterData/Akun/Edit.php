@@ -13,15 +13,19 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Akun $akun;
+
     public string $kode_akun = '';
+
     public string $nama_akun = '';
+
     public string $tipe_akun = 'aset';
+
     public string $status = 'aktif';
 
     public function mount(Akun $akun): void
     {
         Gate::authorize('manage_akun');
-        
+
         $this->akun = $akun;
         $this->kode_akun = $akun->kode_akun;
         $this->nama_akun = $akun->nama_akun;
@@ -59,4 +63,3 @@ class Edit extends Component
         return view('livewire.master-data.akun.edit');
     }
 }
-

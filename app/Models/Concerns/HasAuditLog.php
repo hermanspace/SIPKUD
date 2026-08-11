@@ -10,12 +10,11 @@ trait HasAuditLog
 {
     /**
      * Log audit untuk action tertentu
-     * 
-     * @param string $action created, updated, deleted, restored, voided, posted
-     * @param array|null $oldValues Data sebelum perubahan
-     * @param array|null $newValues Data setelah perubahan
-     * @param string|null $description Keterangan tambahan
-     * @return AuditLog
+     *
+     * @param  string  $action  created, updated, deleted, restored, voided, posted
+     * @param  array|null  $oldValues  Data sebelum perubahan
+     * @param  array|null  $newValues  Data setelah perubahan
+     * @param  string|null  $description  Keterangan tambahan
      */
     protected function logAudit(
         string $action,

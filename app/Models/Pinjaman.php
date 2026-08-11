@@ -3,16 +3,18 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasDesaScope;
+use App\Services\AccountingService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Model Pinjaman
- * 
+ *
  * Transaksi pinjaman anggota USP/UED-SP
  * Merupakan transaksi awal sistem simpan pinjam
- * 
+ *
  * Catatan:
  * - Saldo pinjaman TIDAK disimpan di database
  * - Semua saldo dihitung dari transaksi
@@ -89,26 +91,27 @@ class Pinjaman extends Model
         // Otomatis buat transaksi kas keluar dan jurnal saat pinjaman dibuat
         static::created(function (Pinjaman $pinjaman) {
             $pinjaman->load('anggota');
-            
+
             // Get akun
-            $akunKas = \App\Models\Akun::aktif()
+            $akunKas = Akun::aktif()
                 ->where('nama_akun', 'Kas')
                 ->first();
-            
-            $akunPiutang = \App\Models\Akun::aktif()
+
+            $akunPiutang = Akun::aktif()
                 ->where('nama_akun', 'Piutang Pinjaman Anggota')
                 ->first();
-            
-            if (!$akunKas || !$akunPiutang) {
-                \Illuminate\Support\Facades\Log::warning("Akun tidak ditemukan untuk pinjaman {$pinjaman->id}");
+
+            if (! $akunKas || ! $akunPiutang) {
+                Log::warning("Akun tidak ditemukan untuk pinjaman {$pinjaman->id}");
+
                 return;
             }
-            
+
             // Get unit usaha USP
-            $unitUsaha = \App\Models\UnitUsaha::where('desa_id', $pinjaman->desa_id)
+            $unitUsaha = UnitUsaha::where('desa_id', $pinjaman->desa_id)
                 ->where('kode_unit', 'USP')
                 ->first();
-            
+
             // Create TransaksiKas
             $transaksiKas = TransaksiKas::create([
                 'desa_id' => $pinjaman->desa_id,
@@ -121,9 +124,9 @@ class Pinjaman extends Model
                 'jumlah' => $pinjaman->jumlah_pinjaman,
                 'pinjaman_id' => $pinjaman->id,
             ]);
-            
+
             // Auto-create Jurnal
-            $accountingService = app(\App\Services\AccountingService::class);
+            $accountingService = app(AccountingService::class);
             $accountingService->createJurnal([
                 'desa_id' => $pinjaman->desa_id,
                 'unit_usaha_id' => $unitUsaha?->id,
@@ -176,6 +179,7 @@ class Pinjaman extends Model
     public function getSisaPinjamanAttribute(): float
     {
         $totalPokokDibayar = (float) $this->angsuran()->sum('pokok_dibayar');
+
         return max(0, (float) $this->jumlah_pinjaman - $totalPokokDibayar);
     }
 
@@ -188,6 +192,7 @@ class Pinjaman extends Model
     public function getStatusPinjamanCalculatedAttribute(): string
     {
         $sisaPinjaman = $this->sisa_pinjaman;
+
         return $sisaPinjaman > 0 ? 'aktif' : 'lunas';
     }
 
@@ -198,7 +203,7 @@ class Pinjaman extends Model
     public function updateStatusFromSisa(): void
     {
         $newStatus = $this->status_pinjaman_calculated;
-        
+
         // Hanya update jika status berbeda
         if ($this->status_pinjaman !== $newStatus) {
             $this->update(['status_pinjaman' => $newStatus]);

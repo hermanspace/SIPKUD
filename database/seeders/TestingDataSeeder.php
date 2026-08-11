@@ -6,7 +6,6 @@ use App\Models\Akun;
 use App\Models\Anggota;
 use App\Models\Desa;
 use App\Models\Jurnal;
-use App\Models\JurnalDetail;
 use App\Models\Kelompok;
 use App\Models\TransaksiKas;
 use App\Models\UnitUsaha;
@@ -19,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 
 /**
  * Seeder untuk data testing
- * 
+ *
  * Membuat data lengkap untuk Desa Kelapapati:
  * - User untuk testing
  * - Kelompok
@@ -32,9 +31,13 @@ use Illuminate\Support\Facades\Hash;
 class TestingDataSeeder extends Seeder
 {
     protected $desa;
+
     protected $user;
+
     protected $accountingService;
+
     protected $unitUsahaUSP;
+
     protected $unitUsahaUMUM;
 
     /**
@@ -49,8 +52,9 @@ class TestingDataSeeder extends Seeder
             ->orWhere('kode_desa', 'DES005')
             ->first();
 
-        if (!$this->desa) {
+        if (! $this->desa) {
             $this->command->error('Desa Kelapapati tidak ditemukan. Jalankan DesaSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -232,8 +236,9 @@ class TestingDataSeeder extends Seeder
         $akunPendapatan = Akun::aktif()->where('tipe_akun', 'pendapatan')->first();
         $akunBeban = Akun::aktif()->where('tipe_akun', 'beban')->first();
 
-        if (!$akunKas || !$akunPendapatan || !$akunBeban) {
+        if (! $akunKas || ! $akunPendapatan || ! $akunBeban) {
             $this->command->warn('⚠ Akun tidak lengkap, skip transaksi kas Desember 2025');
+
             return;
         }
 
@@ -244,7 +249,7 @@ class TestingDataSeeder extends Seeder
             ['tanggal' => '2025-12-10', 'jenis' => 'masuk', 'jumlah' => 2000000, 'uraian' => 'Pendapatan simpanan anggota', 'akun_lawan' => $akunPendapatan->id],
             ['tanggal' => '2025-12-15', 'jenis' => 'masuk', 'jumlah' => 4000000, 'uraian' => 'Pendapatan jasa pinjaman', 'akun_lawan' => $akunPendapatan->id],
             ['tanggal' => '2025-12-20', 'jenis' => 'masuk', 'jumlah' => 2500000, 'uraian' => 'Pendapatan simpanan anggota', 'akun_lawan' => $akunPendapatan->id],
-            
+
             // Kas Keluar
             ['tanggal' => '2025-12-03', 'jenis' => 'keluar', 'jumlah' => 1500000, 'uraian' => 'Beban operasional', 'akun_lawan' => $akunBeban->id],
             ['tanggal' => '2025-12-08', 'jenis' => 'keluar', 'jumlah' => 2000000, 'uraian' => 'Beban gaji karyawan', 'akun_lawan' => $akunBeban->id],
@@ -278,8 +283,9 @@ class TestingDataSeeder extends Seeder
         $akunPendapatan = Akun::aktif()->where('tipe_akun', 'pendapatan')->first();
         $akunBeban = Akun::aktif()->where('tipe_akun', 'beban')->first();
 
-        if (!$akunKas || !$akunPendapatan || !$akunBeban) {
+        if (! $akunKas || ! $akunPendapatan || ! $akunBeban) {
             $this->command->warn('⚠ Akun tidak lengkap, skip transaksi kas Januari 2026');
+
             return;
         }
 
@@ -290,7 +296,7 @@ class TestingDataSeeder extends Seeder
             ['tanggal' => '2026-01-10', 'jenis' => 'masuk', 'jumlah' => 2800000, 'uraian' => 'Pendapatan simpanan anggota', 'akun_lawan' => $akunPendapatan->id],
             ['tanggal' => '2026-01-15', 'jenis' => 'masuk', 'jumlah' => 4500000, 'uraian' => 'Pendapatan jasa pinjaman', 'akun_lawan' => $akunPendapatan->id],
             ['tanggal' => '2026-01-20', 'jenis' => 'masuk', 'jumlah' => 3200000, 'uraian' => 'Pendapatan simpanan anggota', 'akun_lawan' => $akunPendapatan->id],
-            
+
             // Kas Keluar
             ['tanggal' => '2026-01-04', 'jenis' => 'keluar', 'jumlah' => 1800000, 'uraian' => 'Beban operasional', 'akun_lawan' => $akunBeban->id],
             ['tanggal' => '2026-01-08', 'jenis' => 'keluar', 'jumlah' => 2200000, 'uraian' => 'Beban gaji karyawan', 'akun_lawan' => $akunBeban->id],
@@ -329,8 +335,9 @@ class TestingDataSeeder extends Seeder
             ->where('nama_akun', 'like', '%Penyusutan%')
             ->first();
 
-        if (!$akunAset || !$akunBebanPenyusutan) {
+        if (! $akunAset || ! $akunBebanPenyusutan) {
             $this->command->warn('⚠ Akun tidak lengkap, skip jurnal memorial Desember 2025');
+
             return;
         }
 
@@ -375,8 +382,9 @@ class TestingDataSeeder extends Seeder
             ->where('nama_akun', 'like', '%Penyusutan%')
             ->first();
 
-        if (!$akunAset || !$akunBebanPenyusutan) {
+        if (! $akunAset || ! $akunBebanPenyusutan) {
             $this->command->warn('⚠ Akun tidak lengkap, skip jurnal memorial Januari 2026');
+
             return;
         }
 

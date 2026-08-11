@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Kecamatan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Kecamatan>
+ * @extends Factory<Kecamatan>
  */
 class KecamatanFactory extends Factory
 {

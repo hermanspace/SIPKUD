@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,15 +13,15 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * Model User (Pengguna)
- * 
+ *
  * Sistem autentikasi dan otorisasi untuk SIPKUD
  * Mendukung 4 role: Super Admin PMD (Kabupaten), Admin Kecamatan, Admin Desa, Executive View
- * 
+ *
  * Hierarki:
  * - Super Admin: dapat membuat Admin Kecamatan dan Admin Desa
  * - Admin Kecamatan: dapat membuat Admin Desa di kecamatannya
  * - Admin Desa: level terendah, mengelola data desa
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas
@@ -30,7 +31,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
@@ -150,19 +151,19 @@ class User extends Authenticatable
             // Super Admin dapat akses semua desa
             return Desa::orderBy('nama_desa')->get();
         }
-        
+
         if ($this->isAdminKecamatan()) {
             // Admin Kecamatan hanya dapat akses desa di kecamatannya
             return Desa::where('kecamatan_id', $this->kecamatan_id)
-                       ->orderBy('nama_desa')
-                       ->get();
+                ->orderBy('nama_desa')
+                ->get();
         }
-        
+
         if ($this->desa_id) {
             // Admin Desa dan lainnya hanya dapat akses desanya sendiri
             return Desa::where('id', $this->desa_id)->get();
         }
-        
+
         return collect([]);
     }
 
@@ -174,12 +175,13 @@ class User extends Authenticatable
         if ($this->isSuperAdmin()) {
             return true;
         }
-        
+
         if ($this->isAdminKecamatan()) {
             $desa = Desa::find($desaId);
+
             return $desa && $desa->kecamatan_id == $this->kecamatan_id;
         }
-        
+
         return $this->desa_id == $desaId;
     }
 }

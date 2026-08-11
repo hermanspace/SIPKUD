@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Unique constraint: kode_unit per desa
             $table->unique(['desa_id', 'kode_unit']);
         });

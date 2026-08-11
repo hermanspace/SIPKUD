@@ -15,16 +15,24 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public string $tipeFilter = '';
 
     // Form properties
     public bool $showModal = false;
+
     public ?int $editingId = null;
+
     public string $judul = '';
+
     public string $isi = '';
+
     public string $prioritas = 'sedang';
+
     public string $tipe = 'info';
+
     public bool $aktif = true;
 
     protected $queryString = [
@@ -63,14 +71,14 @@ class Index extends Component
     public function edit(int $id): void
     {
         $pengumuman = Pengumuman::findOrFail($id);
-        
+
         $this->editingId = $pengumuman->id;
         $this->judul = $pengumuman->judul;
         $this->isi = $pengumuman->isi;
         $this->prioritas = $pengumuman->prioritas;
         $this->tipe = $pengumuman->tipe;
         $this->aktif = $pengumuman->aktif;
-        
+
         $this->showModal = true;
     }
 
@@ -112,15 +120,15 @@ class Index extends Component
     {
         $pengumuman = Pengumuman::findOrFail($id);
         $pengumuman->delete();
-        
+
         session()->flash('message', 'Pengumuman berhasil dihapus.');
     }
 
     public function toggleStatus(int $id): void
     {
         $pengumuman = Pengumuman::findOrFail($id);
-        $pengumuman->update(['aktif' => !$pengumuman->aktif]);
-        
+        $pengumuman->update(['aktif' => ! $pengumuman->aktif]);
+
         session()->flash('message', 'Status pengumuman berhasil diubah.');
     }
 
@@ -148,8 +156,8 @@ class Index extends Component
         // Search
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('judul', 'like', '%' . $this->search . '%')
-                  ->orWhere('isi', 'like', '%' . $this->search . '%');
+                $q->where('judul', 'like', '%'.$this->search.'%')
+                    ->orWhere('isi', 'like', '%'.$this->search.'%');
             });
         }
 

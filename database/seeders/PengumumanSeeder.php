@@ -14,9 +14,10 @@ class PengumumanSeeder extends Seeder
     public function run(): void
     {
         $superAdmin = User::where('role', 'super_admin')->first();
-        
-        if (!$superAdmin) {
+
+        if (! $superAdmin) {
             $this->command->warn('Super Admin tidak ditemukan. Skip seeding pengumuman.');
+
             return;
         }
 
@@ -80,7 +81,6 @@ class PengumumanSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ Seeder pengumuman berhasil dijalankan. Total: ' . count($pengumuman) . ' pengumuman.');
+        $this->command->info('✅ Seeder pengumuman berhasil dijalankan. Total: '.count($pengumuman).' pengumuman.');
     }
 }
-

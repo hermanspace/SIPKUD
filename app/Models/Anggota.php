@@ -10,10 +10,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Anggota
- * 
+ *
  * Master data untuk anggota (member)
  * Digunakan untuk menyimpan data anggota USP/UED-SP
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Kas
  * - Jurnal (Akuntansi)

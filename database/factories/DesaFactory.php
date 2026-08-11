@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Desa;
 use App\Models\Kecamatan;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Desa>
+ * @extends Factory<Desa>
  */
 class DesaFactory extends Factory
 {

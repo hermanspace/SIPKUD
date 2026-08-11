@@ -14,6 +14,7 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
 
     protected $queryString = [
@@ -42,6 +43,7 @@ class Index extends Component
         $desaCount = $kecamatan->desa()->count();
         if ($desaCount > 0) {
             $this->dispatch('error', message: "Tidak dapat menghapus kecamatan yang memiliki {$desaCount} desa.");
+
             return;
         }
 
@@ -54,8 +56,8 @@ class Index extends Component
         $query = Kecamatan::withCount('desa')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama_kecamatan', 'like', '%' . $this->search . '%')
-                        ->orWhere('kode_kecamatan', 'like', '%' . $this->search . '%');
+                    $q->where('nama_kecamatan', 'like', '%'.$this->search.'%')
+                        ->orWhere('kode_kecamatan', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->statusFilter, function ($query) {

@@ -16,6 +16,7 @@ use App\Services\AccountingService;
 use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -57,6 +58,7 @@ class KelapapatiFakerSeeder extends Seeder
 
         if (! $this->desa) {
             $this->command->error('Desa Kelapapati tidak ditemukan. Jalankan DesaSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -129,7 +131,7 @@ class KelapapatiFakerSeeder extends Seeder
                     'nama_kelompok' => $nama,
                 ],
                 [
-                    'keterangan' => 'Kelompok binaan ' . $this->desa->nama_desa,
+                    'keterangan' => 'Kelompok binaan '.$this->desa->nama_desa,
                     'status' => 'aktif',
                 ]
             );
@@ -142,13 +144,14 @@ class KelapapatiFakerSeeder extends Seeder
     }
 
     /**
-     * @param array<int, int> $kelompokIds
-     * @return \Illuminate\Support\Collection<int, int> anggota ids
+     * @param  array<int, int>  $kelompokIds
+     * @return Collection<int, int> anggota ids
      */
-    protected function createAnggota(array $kelompokIds): \Illuminate\Support\Collection
+    protected function createAnggota(array $kelompokIds): Collection
     {
         if (empty($kelompokIds)) {
             $this->command->warn('Tidak ada kelompok, skip anggota.');
+
             return collect();
         }
 
@@ -168,8 +171,8 @@ class KelapapatiFakerSeeder extends Seeder
                 'kelompok_id' => $kelompokId,
                 'nama' => $this->faker->name(),
                 'nik' => $nik,
-                'alamat' => $this->faker->streetAddress() . ', RT ' . $this->faker->numberBetween(1, 10) . '/RW ' . $this->faker->numberBetween(1, 5),
-                'nomor_hp' => '08' . $this->faker->numerify('##########'),
+                'alamat' => $this->faker->streetAddress().', RT '.$this->faker->numberBetween(1, 10).'/RW '.$this->faker->numberBetween(1, 5),
+                'nomor_hp' => '08'.$this->faker->numerify('##########'),
                 'jenis_kelamin' => $jenisKelamin,
                 'tanggal_gabung' => Carbon::instance($tanggalGabung),
                 'status' => 'aktif',
@@ -185,7 +188,7 @@ class KelapapatiFakerSeeder extends Seeder
     protected function generateUniqueNik(array &$used): string
     {
         do {
-            $nik = '14' . $this->faker->numerify('##############');
+            $nik = '14'.$this->faker->numerify('##############');
         } while (isset($used[$nik]));
 
         return $nik;
@@ -199,6 +202,7 @@ class KelapapatiFakerSeeder extends Seeder
 
         if (! $akunKas || $akunPendapatan->isEmpty() || $akunBeban->isEmpty()) {
             $this->command->warn('Akun tidak lengkap, skip transaksi kas.');
+
             return;
         }
 
@@ -271,9 +275,9 @@ class KelapapatiFakerSeeder extends Seeder
     }
 
     /**
-     * @param \Illuminate\Support\Collection<int, int> $anggotaIds
+     * @param  Collection<int, int>  $anggotaIds
      */
-    protected function createPinjamanDanAngsuran(\Illuminate\Support\Collection $anggotaIds): void
+    protected function createPinjamanDanAngsuran(Collection $anggotaIds): void
     {
         if ($anggotaIds->isEmpty() || $this->jumlahPinjaman <= 0) {
             return;
@@ -291,7 +295,7 @@ class KelapapatiFakerSeeder extends Seeder
 
         foreach ($anggotas as $anggota) {
             $tanggal = $this->faker->randomElement($bulan)->copy()->addDays($this->faker->numberBetween(1, 20));
-            $nomorPinjaman = 'PNJ/' . $tanggal->format('Y/m') . '/' . str_pad($nomorUrut++, 5, '0', STR_PAD_LEFT);
+            $nomorPinjaman = 'PNJ/'.$tanggal->format('Y/m').'/'.str_pad($nomorUrut++, 5, '0', STR_PAD_LEFT);
 
             $attrs = [
                 'anggota_id' => $anggota->id,
@@ -349,7 +353,7 @@ class KelapapatiFakerSeeder extends Seeder
             }
             $this->command->info('Neraca saldo diposting.');
         } catch (\Throwable $e) {
-            $this->command->warn('Post neraca saldo: ' . $e->getMessage());
+            $this->command->warn('Post neraca saldo: '.$e->getMessage());
         }
     }
 }

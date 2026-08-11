@@ -10,8 +10,6 @@ return new class extends Migration
     /**
      * Restrukturisasi Master Akun (COA) menjadi global.
      * Akun digunakan oleh seluruh desa - hanya Admin dan Super Admin yang bisa add/edit.
-     *
-     * @return void
      */
     public function up(): void
     {

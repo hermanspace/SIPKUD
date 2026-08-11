@@ -17,8 +17,11 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $roleFilter = '';
+
     public ?int $kecamatanFilter = null;
+
     public ?int $desaFilter = null;
 
     protected $queryString = [
@@ -32,10 +35,10 @@ class Index extends Component
     {
         // Super Admin dan Admin Kecamatan dapat mengakses daftar pengguna
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
-        
+
         if ($user->isSuperAdmin()) {
             Gate::authorize('super_admin');
         } else {
@@ -67,16 +70,18 @@ class Index extends Component
     public function delete(int $userId): void
     {
         $user = User::findOrFail($userId);
-        
+
         // Prevent deleting yourself
         if ($user->id === Auth::id()) {
             $this->dispatch('error', message: 'Tidak dapat menghapus akun Anda sendiri.');
+
             return;
         }
 
         // Prevent deleting the last super admin
         if ($user->isSuperAdmin() && User::where('role', 'super_admin')->count() <= 1) {
             $this->dispatch('error', message: 'Tidak dapat menghapus super admin terakhir.');
+
             return;
         }
 
@@ -87,23 +92,23 @@ class Index extends Component
     public function render()
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
-        
+
         $query = User::with(['kecamatan', 'desa'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $q->where('nama', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 });
             });
-        
+
         // Jika Admin Kecamatan, hanya tampilkan admin desa di kecamatannya
         if ($user->isAdminKecamatan()) {
             $query->where('kecamatan_id', $user->kecamatan_id)
-                  ->where('role', 'admin_desa'); // Hanya admin desa di kecamatannya
-            
+                ->where('role', 'admin_desa'); // Hanya admin desa di kecamatannya
+
             // Filter desa untuk admin kecamatan
             if ($this->desaFilter) {
                 $query->where('desa_id', $this->desaFilter);
@@ -113,14 +118,14 @@ class Index extends Component
             $query->when($this->roleFilter, function ($query) {
                 $query->where('role', $this->roleFilter);
             })
-            ->when($this->kecamatanFilter, function ($query) {
-                $query->where('kecamatan_id', $this->kecamatanFilter);
-            })
-            ->when($this->desaFilter, function ($query) {
-                $query->where('desa_id', $this->desaFilter);
-            });
+                ->when($this->kecamatanFilter, function ($query) {
+                    $query->where('kecamatan_id', $this->kecamatanFilter);
+                })
+                ->when($this->desaFilter, function ($query) {
+                    $query->where('desa_id', $this->desaFilter);
+                });
         }
-        
+
         $query->orderBy('nama');
 
         // Filter kecamatan untuk dropdown
@@ -134,7 +139,7 @@ class Index extends Component
         if ($user->isAdminKecamatan()) {
             $desa = Desa::where('kecamatan_id', $user->kecamatan_id)->aktif()->orderBy('nama_desa')->get();
         } else {
-            $desa = $this->kecamatanFilter 
+            $desa = $this->kecamatanFilter
                 ? Desa::where('kecamatan_id', $this->kecamatanFilter)->aktif()->orderBy('nama_desa')->get()
                 : collect();
         }

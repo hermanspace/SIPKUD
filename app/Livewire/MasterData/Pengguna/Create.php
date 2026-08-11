@@ -15,11 +15,17 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $nama = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
+
     public string $role = 'admin_desa';
+
     public ?int $kecamatan_id = null;
+
     public ?int $desa_id = null;
 
     public function mount(): void
@@ -30,7 +36,7 @@ class Create extends Component
         } else {
             Gate::authorize('admin_kecamatan');
         }
-        
+
         // Jika user adalah Admin Kecamatan, set default kecamatan_id dan role
         if (Auth::user()->isAdminKecamatan()) {
             $this->kecamatan_id = Auth::user()->kecamatan_id;
@@ -48,7 +54,7 @@ class Create extends Component
             // Admin Kecamatan tidak memiliki desa_id
             $this->desa_id = null;
         }
-        
+
         // Jika user adalah Admin Kecamatan, mereka hanya bisa membuat admin_desa
         if (Auth::user()->isAdminKecamatan() && $this->role !== 'admin_desa') {
             $this->role = 'admin_desa';
@@ -65,30 +71,30 @@ class Create extends Component
     public function save(): void
     {
         $user = Auth::user();
-        
+
         // Validasi role berdasarkan user yang membuat
         $allowedRoles = ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view'];
         if ($user->isAdminKecamatan()) {
             // Admin Kecamatan hanya bisa membuat Admin Desa
             $allowedRoles = ['admin_desa'];
         }
-        
+
         $validated = $this->validate([
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:' . implode(',', $allowedRoles)],
+            'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'kecamatan_id' => [
                 'nullable',
                 'required_if:role,admin_kecamatan,admin_desa,executive_view',
-                'exists:kecamatan,id'
+                'exists:kecamatan,id',
             ],
             'desa_id' => [
                 'nullable',
                 'required_if:role,admin_desa,executive_view',
                 'exists:desa,id',
                 function ($attribute, $value, $fail) {
-                    if (!in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
+                    if (! in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
                         $desa = Desa::find($value);
                         if ($desa && $desa->kecamatan_id !== $this->kecamatan_id) {
                             $fail('Desa harus berada di kecamatan yang dipilih.');
@@ -116,10 +122,12 @@ class Create extends Component
         if ($user->isAdminKecamatan()) {
             if ($validated['role'] !== 'admin_desa') {
                 $this->dispatch('error', message: 'Anda hanya dapat membuat Admin Desa.');
+
                 return;
             }
             if ($validated['kecamatan_id'] !== $user->kecamatan_id) {
                 $this->dispatch('error', message: 'Anda hanya dapat membuat Admin Desa di kecamatan Anda.');
+
                 return;
             }
         }
@@ -133,7 +141,7 @@ class Create extends Component
             $validated['kecamatan_id'] = null;
             $validated['desa_id'] = null;
         }
-        
+
         // Set desa_id to null for admin_kecamatan
         if ($validated['role'] === 'admin_kecamatan') {
             $validated['desa_id'] = null;
@@ -148,15 +156,15 @@ class Create extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Jika Admin Kecamatan, hanya tampilkan kecamatan mereka
         if ($user->isAdminKecamatan()) {
             $kecamatan = Kecamatan::where('id', $user->kecamatan_id)->get();
         } else {
             $kecamatan = Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
         }
-        
-        $desa = $this->kecamatan_id 
+
+        $desa = $this->kecamatan_id
             ? Desa::where('kecamatan_id', $this->kecamatan_id)->aktif()->orderBy('nama_desa')->get()
             : collect();
 

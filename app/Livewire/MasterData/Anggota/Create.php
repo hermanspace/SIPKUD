@@ -4,6 +4,7 @@ namespace App\Livewire\MasterData\Anggota;
 
 use App\Models\Anggota;
 use App\Models\Kelompok;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,12 +14,19 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $nama = '';
+
     public string $nik = '';
+
     public ?string $alamat = null;
+
     public ?string $nomor_hp = null;
+
     public ?string $jenis_kelamin = null;
+
     public ?int $kelompok_id = null;
+
     public ?string $tanggal_gabung = null;
+
     public string $status = 'aktif';
 
     public function mount(): void
@@ -55,17 +63,17 @@ class Create extends Component
 
         // Pastikan hanya admin desa yang bisa membuat anggota
         Gate::authorize('admin_desa');
-        
+
         $user = Auth::user();
         // Admin kecamatan tidak memiliki desa_id, jadi tidak bisa membuat anggota
-        if (!$user->desa_id) {
+        if (! $user->desa_id) {
             abort(403, 'Anda tidak memiliki izin untuk membuat anggota.');
         }
-        
+
         $validated['desa_id'] = Auth::user()->desa_id;
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
-        $validated['tanggal_gabung'] = \Carbon\Carbon::parse($validated['tanggal_gabung']);
+        $validated['tanggal_gabung'] = Carbon::parse($validated['tanggal_gabung']);
 
         Anggota::create($validated);
 
@@ -84,4 +92,3 @@ class Create extends Component
         ]);
     }
 }
-

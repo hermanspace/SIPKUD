@@ -9,11 +9,12 @@ use App\Models\Pinjaman;
 use App\Models\SektorUsaha;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Seeder untuk Pinjaman dan Angsuran
- * 
+ *
  * Membuat data pinjaman dan angsuran untuk Desa Kelapapati
  * Periode: Desember 2025 dan Januari 2026
  */
@@ -31,8 +32,9 @@ class PinjamanAngsuranSeeder extends Seeder
             ->orWhere('kode_desa', 'DES005')
             ->first();
 
-        if (!$this->desa) {
+        if (! $this->desa) {
             $this->command->error('Desa Kelapapati tidak ditemukan. Jalankan DesaSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -47,6 +49,7 @@ class PinjamanAngsuranSeeder extends Seeder
 
             if ($anggota->isEmpty()) {
                 $this->command->warn('⚠ Tidak ada anggota untuk membuat pinjaman. Jalankan TestingDataSeeder terlebih dahulu.');
+
                 return;
             }
 
@@ -68,8 +71,8 @@ class PinjamanAngsuranSeeder extends Seeder
 
     /**
      * Create Pinjaman untuk Desember 2025
-     * @param \Illuminate\Support\Collection $anggota
-     * @param int|null $sektorUsahaId
+     *
+     * @param  Collection  $anggota
      */
     protected function createPinjamanDesember2025($anggota, ?int $sektorUsahaId = null): void
     {
@@ -98,7 +101,7 @@ class PinjamanAngsuranSeeder extends Seeder
         ];
 
         foreach ($pinjamanData as $index => $data) {
-            $nomorPinjaman = 'PNJ/' . Carbon::parse($data['tanggal'])->format('Y/m') . '/' . str_pad($index + 1, 5, '0', STR_PAD_LEFT);
+            $nomorPinjaman = 'PNJ/'.Carbon::parse($data['tanggal'])->format('Y/m').'/'.str_pad($index + 1, 5, '0', STR_PAD_LEFT);
 
             $attrs = [
                 'anggota_id' => $data['anggota']->id,
@@ -125,8 +128,8 @@ class PinjamanAngsuranSeeder extends Seeder
 
     /**
      * Create Pinjaman untuk Januari 2026
-     * @param \Illuminate\Support\Collection $anggota
-     * @param int|null $sektorUsahaId
+     *
+     * @param  Collection  $anggota
      */
     protected function createPinjamanJanuari2026($anggota, ?int $sektorUsahaId = null): void
     {
@@ -148,7 +151,7 @@ class PinjamanAngsuranSeeder extends Seeder
         ];
 
         foreach ($pinjamanData as $index => $data) {
-            $nomorPinjaman = 'PNJ/' . Carbon::parse($data['tanggal'])->format('Y/m') . '/' . str_pad($index + 1, 5, '0', STR_PAD_LEFT);
+            $nomorPinjaman = 'PNJ/'.Carbon::parse($data['tanggal'])->format('Y/m').'/'.str_pad($index + 1, 5, '0', STR_PAD_LEFT);
 
             $attrs = [
                 'anggota_id' => $data['anggota']->id,
@@ -186,16 +189,16 @@ class PinjamanAngsuranSeeder extends Seeder
             $jumlahPinjaman = $p->jumlah_pinjaman;
             $jangkaWaktu = $p->jangka_waktu_bulan;
             $jasaPersen = $p->jasa_persen;
-            
+
             // Hitung angsuran per bulan
             $pokokPerBulan = $jumlahPinjaman / $jangkaWaktu;
             $jasaPerBulan = $jumlahPinjaman * ($jasaPersen / 100);
             $totalPerBulan = $pokokPerBulan + $jasaPerBulan;
-            
+
             // Buat angsuran untuk bulan pertama (Desember 2025 atau Januari 2026)
             $tanggalPinjaman = Carbon::parse($p->tanggal_pinjaman);
             $tanggalAngsuran = $tanggalPinjaman->copy()->addMonth();
-            
+
             // Hanya buat angsuran jika tanggal angsuran <= Januari 2026
             if ($tanggalAngsuran->format('Y-m') <= '2026-01') {
                 AngsuranPinjaman::firstOrCreate(
@@ -204,12 +207,12 @@ class PinjamanAngsuranSeeder extends Seeder
                         'angsuran_ke' => 1,
                     ],
                     [
-                    'tanggal_bayar' => $tanggalAngsuran->format('Y-m-d'),
-                    'pokok_dibayar' => $pokokPerBulan,
-                    'jasa_dibayar' => $jasaPerBulan,
-                    'denda_dibayar' => 0,
-                    'total_dibayar' => $totalPerBulan,
-                ]);
+                        'tanggal_bayar' => $tanggalAngsuran->format('Y-m-d'),
+                        'pokok_dibayar' => $pokokPerBulan,
+                        'jasa_dibayar' => $jasaPerBulan,
+                        'denda_dibayar' => 0,
+                        'total_dibayar' => $totalPerBulan,
+                    ]);
             }
         }
 

@@ -4,24 +4,25 @@ namespace Database\Seeders;
 
 use App\Models\Anggota;
 use App\Models\Desa;
-use App\Models\Kelompok;
 use App\Models\Kecamatan;
+use App\Models\Kelompok;
 use Illuminate\Database\Seeder;
 
 class AnggotaDummySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Generate 20 dummy anggota di beberapa desa di Kecamatan Bengkalis
      */
     public function run(): void
     {
         // Ambil Kecamatan Bengkalis
         $kecamatanBengkalis = Kecamatan::where('nama_kecamatan', 'Kecamatan Bengkalis')->first();
-        
-        if (!$kecamatanBengkalis) {
+
+        if (! $kecamatanBengkalis) {
             $this->command->error('Kecamatan Bengkalis tidak ditemukan. Jalankan KecamatanSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -32,6 +33,7 @@ class AnggotaDummySeeder extends Seeder
 
         if ($desaList->isEmpty()) {
             $this->command->error('Desa di Kecamatan Bengkalis tidak ditemukan. Jalankan DesaSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -44,7 +46,7 @@ class AnggotaDummySeeder extends Seeder
                     'nama_kelompok' => 'Kelompok Mawar',
                 ],
                 [
-                    'keterangan' => 'Kelompok binaan desa ' . $desa->nama_desa,
+                    'keterangan' => 'Kelompok binaan desa '.$desa->nama_desa,
                     'status' => 'aktif',
                 ]
             );
@@ -81,7 +83,7 @@ class AnggotaDummySeeder extends Seeder
                 'jenis_kelamin' => 'L',
                 'tanggal_gabung' => '2023-03-10',
             ],
-            
+
             // Desa Air Putih (DES004)
             [
                 'desa_kode' => 'DES004',
@@ -119,7 +121,7 @@ class AnggotaDummySeeder extends Seeder
                 'jenis_kelamin' => 'L',
                 'tanggal_gabung' => '2023-04-05',
             ],
-            
+
             // Desa Kelemantan (DES006)
             [
                 'desa_kode' => 'DES006',
@@ -148,7 +150,7 @@ class AnggotaDummySeeder extends Seeder
                 'jenis_kelamin' => 'L',
                 'tanggal_gabung' => '2023-04-20',
             ],
-            
+
             // Desa Meskom (DES008)
             [
                 'desa_kode' => 'DES008',
@@ -186,7 +188,7 @@ class AnggotaDummySeeder extends Seeder
                 'jenis_kelamin' => 'L',
                 'tanggal_gabung' => '2023-04-15',
             ],
-            
+
             // Desa Pematang Duku (DES011)
             [
                 'desa_kode' => 'DES011',
@@ -215,7 +217,7 @@ class AnggotaDummySeeder extends Seeder
                 'jenis_kelamin' => 'P',
                 'tanggal_gabung' => '2023-04-10',
             ],
-            
+
             // Desa Penebal (DES013)
             [
                 'desa_kode' => 'DES013',
@@ -252,8 +254,8 @@ class AnggotaDummySeeder extends Seeder
 
         foreach ($anggotaData as $data) {
             $desa = $desaMap[$data['desa_kode']] ?? null;
-            
-            if (!$desa) {
+
+            if (! $desa) {
                 continue;
             }
 
@@ -261,6 +263,7 @@ class AnggotaDummySeeder extends Seeder
             $existing = Anggota::where('nik', $data['nik'])->first();
             if ($existing) {
                 $this->command->info("Anggota {$data['nama']} (NIK: {$data['nik']}) sudah ada, skip.");
+
                 continue;
             }
 
@@ -275,7 +278,7 @@ class AnggotaDummySeeder extends Seeder
                 'tanggal_gabung' => $data['tanggal_gabung'],
                 'status' => 'aktif',
             ]);
-            
+
             $created++;
             $this->command->info("Created: {$data['nama']} ({$desa->nama_desa})");
         }
@@ -283,4 +286,3 @@ class AnggotaDummySeeder extends Seeder
         $this->command->info("✅ Selesai! Total {$created} anggota dummy berhasil dibuat di Kecamatan Bengkalis.");
     }
 }
-

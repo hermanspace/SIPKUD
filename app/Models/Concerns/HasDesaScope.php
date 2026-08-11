@@ -3,14 +3,15 @@
 namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Trait untuk menambahkan scope desa_id pada model tenant
- * 
+ *
  * Scope ini akan otomatis memfilter data berdasarkan desa_id user yang sedang login.
  * Super Admin dapat mengakses semua data tanpa filter.
  * Admin Kecamatan dapat mengakses semua data di kecamatannya.
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas
@@ -27,12 +28,12 @@ trait HasDesaScope
     {
         static::addGlobalScope('desa', function (Builder $builder) {
             // Skip scope jika tidak ada user yang login (untuk seeder, artisan commands, dll)
-            if (!\Illuminate\Support\Facades\Auth::check()) {
+            if (! Auth::check()) {
                 return;
             }
 
-            $user = \Illuminate\Support\Facades\Auth::user();
-            
+            $user = Auth::user();
+
             // Super Admin dapat mengakses semua data
             if ($user && method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
                 return;
@@ -45,6 +46,7 @@ trait HasDesaScope
                 $builder->whereHas('desa', function ($query) use ($user) {
                     $query->where('kecamatan_id', $user->kecamatan_id);
                 });
+
                 return;
             }
 
@@ -55,4 +57,3 @@ trait HasDesaScope
         });
     }
 }
-

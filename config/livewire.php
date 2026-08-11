@@ -64,12 +64,12 @@ return [
     */
 
     'temporary_file_upload' => [
-    'disk' => 'local',
-    'rules' => ['nullable', 'file', 'image', 'max:2048'],
-    'directory' => 'livewire-tmp',
-    'middleware' => [],
-    'max_upload_time' => 30,
-],
+        'disk' => 'local',
+        'rules' => ['nullable', 'file', 'image', 'max:2048'],
+        'directory' => 'livewire-tmp',
+        'middleware' => [],
+        'max_upload_time' => 30,
+    ],
 
     /*
     |---------------------------------------------------------------------------

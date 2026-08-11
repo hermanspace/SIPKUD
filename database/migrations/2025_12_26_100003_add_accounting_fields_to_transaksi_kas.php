@@ -19,7 +19,7 @@ return new class extends Migration
                 ->constrained('akun')
                 ->restrictOnDelete()
                 ->comment('Akun kas/bank yang digunakan');
-            
+
             // Tambah foreign key ke akun lawan (untuk double entry)
             $table->foreignId('akun_lawan_id')
                 ->nullable()
@@ -27,7 +27,7 @@ return new class extends Migration
                 ->constrained('akun')
                 ->restrictOnDelete()
                 ->comment('Akun lawan (pendapatan/biaya/dll)');
-            
+
             // Tambah unit usaha
             $table->foreignId('unit_usaha_id')
                 ->nullable()
@@ -45,10 +45,10 @@ return new class extends Migration
         Schema::table('transaksi_kas', function (Blueprint $table) {
             $table->dropForeign(['akun_kas_id']);
             $table->dropColumn('akun_kas_id');
-            
+
             $table->dropForeign(['akun_lawan_id']);
             $table->dropColumn('akun_lawan_id');
-            
+
             $table->dropForeign(['unit_usaha_id']);
             $table->dropColumn('unit_usaha_id');
         });

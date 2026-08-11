@@ -50,11 +50,11 @@ class AuditLog extends Model
     public function scopeForModel($query, string $modelType, ?int $modelId = null)
     {
         $query->where('model_type', $modelType);
-        
+
         if ($modelId !== null) {
             $query->where('model_id', $modelId);
         }
-        
+
         return $query;
     }
 

@@ -4,6 +4,7 @@ namespace App\Livewire\MasterData\Anggota;
 
 use App\Models\Anggota;
 use App\Models\Kelompok;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -13,20 +14,28 @@ use Livewire\Component;
 class Edit extends Component
 {
     public Anggota $anggota;
+
     public string $nama = '';
+
     public string $nik = '';
+
     public ?string $alamat = null;
+
     public ?string $nomor_hp = null;
+
     public ?string $jenis_kelamin = null;
+
     public ?int $kelompok_id = null;
+
     public ?string $tanggal_gabung = null;
+
     public string $status = 'aktif';
 
     public function mount(Anggota $anggota): void
     {
         // Hanya Admin Desa yang bisa mengedit anggota
         Gate::authorize('admin_desa');
-        
+
         $this->anggota = $anggota;
         $this->nama = $anggota->nama;
         $this->nik = $anggota->nik ?? '';
@@ -42,10 +51,10 @@ class Edit extends Component
     {
         // Pastikan hanya admin desa yang bisa mengupdate anggota
         Gate::authorize('admin_desa');
-        
+
         $validated = $this->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/', 'unique:anggota,nik,' . $this->anggota->id],
+            'nik' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/', 'unique:anggota,nik,'.$this->anggota->id],
             'alamat' => ['nullable', 'string'],
             'nomor_hp' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
             'jenis_kelamin' => ['nullable', 'in:L,P'],
@@ -68,7 +77,7 @@ class Edit extends Component
         ]);
 
         $validated['updated_by'] = Auth::id();
-        $validated['tanggal_gabung'] = \Carbon\Carbon::parse($validated['tanggal_gabung']);
+        $validated['tanggal_gabung'] = Carbon::parse($validated['tanggal_gabung']);
 
         $this->anggota->update($validated);
 
@@ -87,4 +96,3 @@ class Edit extends Component
         ]);
     }
 }
-

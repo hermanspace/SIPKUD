@@ -17,6 +17,7 @@ class DesaSeeder extends Seeder
 
         if ($kecamatan->isEmpty()) {
             $this->command->warn('Kecamatan tidak ditemukan. Jalankan KecamatanSeeder terlebih dahulu.');
+
             return;
         }
 
@@ -210,7 +211,7 @@ class DesaSeeder extends Seeder
 
         $desaCounter = 1;
         foreach ($desaData as $kodeKecamatan => $desaList) {
-            if (!isset($kecamatanMap[$kodeKecamatan])) {
+            if (! isset($kecamatanMap[$kodeKecamatan])) {
                 continue;
             }
 

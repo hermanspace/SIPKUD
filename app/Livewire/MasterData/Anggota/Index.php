@@ -4,6 +4,8 @@ namespace App\Livewire\MasterData\Anggota;
 
 use App\Exports\AnggotaExport;
 use App\Models\Anggota;
+use App\Models\Desa;
+use App\Models\Kecamatan;
 use App\Models\Kelompok;
 use App\Models\Pinjaman;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,14 +23,20 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $kelompokFilter = null;
+
     public string $statusFilter = '';
+
     public ?int $kecamatanFilter = null;
+
     public ?int $desaFilter = null;
-    
+
     // Modal detail anggota
     public bool $showDetailModal = false;
+
     public ?Anggota $selectedAnggota = null;
+
     public $anggotaPinjaman = [];
 
     protected $queryString = [
@@ -75,7 +83,7 @@ class Index extends Component
     public function showAnggotaDetail(int $anggotaId): void
     {
         $this->selectedAnggota = Anggota::with(['kelompok', 'desa.kecamatan'])->find($anggotaId);
-        
+
         if ($this->selectedAnggota) {
             // Ambil semua pinjaman anggota dengan relasi angsuran
             $this->anggotaPinjaman = Pinjaman::with('angsuran')
@@ -97,31 +105,31 @@ class Index extends Component
                     ];
                 })
                 ->toArray();
-            
+
             $this->showDetailModal = true;
         }
     }
-    
+
     public function closeDetailModal(): void
     {
         $this->showDetailModal = false;
         $this->selectedAnggota = null;
         $this->anggotaPinjaman = [];
     }
-    
+
     public function exportAnggotaPdf()
     {
-        if (!$this->selectedAnggota) {
+        if (! $this->selectedAnggota) {
             return;
         }
-        
+
         $pdf = Pdf::loadView('pdf.detail-anggota', [
             'anggota' => $this->selectedAnggota,
             'pinjaman' => $this->anggotaPinjaman,
         ])->setPaper('a4', 'portrait');
-        
-        $fileName = 'detail-anggota-' . Str::slug($this->selectedAnggota->nama) . '-' . now()->format('Y-m-d-His') . '.pdf';
-        
+
+        $fileName = 'detail-anggota-'.Str::slug($this->selectedAnggota->nama).'-'.now()->format('Y-m-d-His').'.pdf';
+
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, $fileName);
@@ -130,26 +138,26 @@ class Index extends Component
     public function exportExcel(): StreamedResponse
     {
         $anggota = $this->getAnggotaQuery()->get();
-        
+
         $kecamatanNama = null;
         $desaNama = null;
         $kelompokNama = null;
-        
+
         if ($this->kecamatanFilter) {
-            $kecamatan = \App\Models\Kecamatan::find($this->kecamatanFilter);
+            $kecamatan = Kecamatan::find($this->kecamatanFilter);
             $kecamatanNama = $kecamatan?->nama_kecamatan;
         }
-        
+
         if ($this->desaFilter) {
-            $desa = \App\Models\Desa::find($this->desaFilter);
+            $desa = Desa::find($this->desaFilter);
             $desaNama = $desa?->nama_desa;
         }
-        
+
         if ($this->kelompokFilter) {
             $kelompok = Kelompok::find($this->kelompokFilter);
             $kelompokNama = $kelompok?->nama_kelompok;
         }
-        
+
         $export = new AnggotaExport(
             $anggota,
             $kecamatanNama,
@@ -157,23 +165,23 @@ class Index extends Component
             $kelompokNama,
             $this->statusFilter ?: null
         );
-        
-        $fileName = 'master-anggota-' . now()->format('Y-m-d-His') . '.xlsx';
-        $tempFile = storage_path('app/temp/' . $fileName);
-        
+
+        $fileName = 'master-anggota-'.now()->format('Y-m-d-His').'.xlsx';
+        $tempFile = storage_path('app/temp/'.$fileName);
+
         // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
+        if (! file_exists(storage_path('app/temp'))) {
             mkdir(storage_path('app/temp'), 0755, true);
         }
-        
+
         $export->export($tempFile);
-        
+
         return response()->stream(function () use ($tempFile) {
             echo file_get_contents($tempFile);
             unlink($tempFile);
         }, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
         ]);
     }
 
@@ -181,26 +189,26 @@ class Index extends Component
     {
         $anggota = $this->getAnggotaQuery()->get();
         $user = Auth::user();
-        
+
         $kecamatanNama = null;
         $desaNama = null;
         $kelompokNama = null;
-        
+
         if ($this->kecamatanFilter) {
-            $kecamatan = \App\Models\Kecamatan::find($this->kecamatanFilter);
+            $kecamatan = Kecamatan::find($this->kecamatanFilter);
             $kecamatanNama = $kecamatan?->nama_kecamatan;
         }
-        
+
         if ($this->desaFilter) {
-            $desa = \App\Models\Desa::find($this->desaFilter);
+            $desa = Desa::find($this->desaFilter);
             $desaNama = $desa?->nama_desa;
         }
-        
+
         if ($this->kelompokFilter) {
             $kelompok = Kelompok::find($this->kelompokFilter);
             $kelompokNama = $kelompok?->nama_kelompok;
         }
-        
+
         $pdf = Pdf::loadView('pdf.master-anggota', [
             'anggota' => $anggota,
             'kecamatanNama' => $kecamatanNama,
@@ -209,9 +217,9 @@ class Index extends Component
             'statusFilter' => $this->statusFilter ?: null,
             'user' => $user,
         ])->setPaper('a4', 'landscape');
-        
-        $fileName = 'master-anggota-' . now()->format('Y-m-d-His') . '.pdf';
-        
+
+        $fileName = 'master-anggota-'.now()->format('Y-m-d-His').'.pdf';
+
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, $fileName);
@@ -220,12 +228,12 @@ class Index extends Component
     protected function getAnggotaQuery()
     {
         $user = Auth::user();
-        
+
         return Anggota::with(['kelompok', 'desa.kecamatan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%')
-                        ->orWhere('alamat', 'like', '%' . $this->search . '%');
+                    $q->where('nama', 'like', '%'.$this->search.'%')
+                        ->orWhere('alamat', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->kelompokFilter, function ($query) {
@@ -244,21 +252,21 @@ class Index extends Component
             })
             ->orderBy('nama');
     }
-    
+
     public function delete(int $anggotaId): void
     {
         // Hanya Admin Desa yang bisa menghapus anggota
         $user = Auth::user();
-        if (!$user || !$user->isAdminDesa()) {
+        if (! $user || ! $user->isAdminDesa()) {
             abort(403, 'Anda tidak memiliki izin untuk menghapus anggota.');
         }
-        
+
         $anggota = Anggota::findOrFail($anggotaId);
-        
+
         // Catatan: Di fase selanjutnya, akan ada relasi ke modul Pinjaman
         // Jika anggota memiliki pinjaman aktif, tidak boleh dihapus
         // Untuk sekarang, anggota bisa dihapus karena belum ada relasi ke modul lain
-        
+
         $anggota->delete();
         $this->dispatch('success', message: 'Anggota berhasil dihapus.');
     }
@@ -266,12 +274,12 @@ class Index extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         $query = Anggota::with(['kelompok', 'desa.kecamatan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%' . $this->search . '%')
-                        ->orWhere('alamat', 'like', '%' . $this->search . '%');
+                    $q->where('nama', 'like', '%'.$this->search.'%')
+                        ->orWhere('alamat', 'like', '%'.$this->search.'%');
                 });
             })
             ->when($this->kelompokFilter, function ($query) {
@@ -309,18 +317,18 @@ class Index extends Component
         // Get kecamatan and desa for filters
         $kecamatan = collect();
         $desa = collect();
-        
+
         if ($user && $user->isSuperAdmin()) {
-            $kecamatan = \App\Models\Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
+            $kecamatan = Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
             if ($this->kecamatanFilter) {
-                $desa = \App\Models\Desa::where('kecamatan_id', $this->kecamatanFilter)
+                $desa = Desa::where('kecamatan_id', $this->kecamatanFilter)
                     ->aktif()
                     ->orderBy('nama_desa')
                     ->get();
             }
         } elseif ($user && $user->isAdminKecamatan()) {
             // Admin kecamatan bisa filter berdasarkan desa di kecamatannya
-            $desa = \App\Models\Desa::where('kecamatan_id', $user->kecamatan_id)
+            $desa = Desa::where('kecamatan_id', $user->kecamatan_id)
                 ->aktif()
                 ->orderBy('nama_desa')
                 ->get();
@@ -334,4 +342,3 @@ class Index extends Component
         ]);
     }
 }
-

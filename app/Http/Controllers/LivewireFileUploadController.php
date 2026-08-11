@@ -68,7 +68,7 @@ class LivewireFileUploadController extends Controller
         $fileHashPaths = collect($files)->map(function ($file) use ($disk) {
             $filename = TemporaryUploadedFile::generateHashNameWithOriginalNameEmbedded($file);
 
-            return $file->storeAs('/' . FileUploadConfiguration::path(), $filename, [
+            return $file->storeAs('/'.FileUploadConfiguration::path(), $filename, [
                 'disk' => $disk,
             ]);
         });

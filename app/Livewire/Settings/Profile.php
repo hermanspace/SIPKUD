@@ -31,8 +31,9 @@ class Profile extends Component
         $user = Auth::user();
 
         // Hanya Super Admin yang bisa mengubah nama dan email
-        if (!$user->isSuperAdmin()) {
+        if (! $user->isSuperAdmin()) {
             Session::flash('error', 'Anda tidak memiliki izin untuk mengubah nama dan email.');
+
             return;
         }
 

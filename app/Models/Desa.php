@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Model Desa
- * 
+ *
  * Master data untuk desa (village)
  * Merupakan basis multi-tenancy sistem SIPKUD
  * Setiap desa memiliki data terpisah (kelompok, anggota, akun, pinjaman, dll)
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Kas
  * - Jurnal (Akuntansi)

@@ -12,7 +12,9 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $nama_kelompok = '';
+
     public ?string $keterangan = null;
+
     public string $status = 'aktif';
 
     public function mount(): void
@@ -35,13 +37,13 @@ class Create extends Component
 
         // Pastikan hanya admin desa yang bisa membuat kelompok
         Gate::authorize('admin_desa');
-        
+
         $user = Auth::user();
         // Admin kecamatan tidak memiliki desa_id, jadi tidak bisa membuat kelompok
-        if (!$user->desa_id) {
+        if (! $user->desa_id) {
             abort(403, 'Anda tidak memiliki izin untuk membuat kelompok.');
         }
-        
+
         $validated['desa_id'] = Auth::user()->desa_id;
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
@@ -57,4 +59,3 @@ class Create extends Component
         return view('livewire.master-data.kelompok.create');
     }
 }
-

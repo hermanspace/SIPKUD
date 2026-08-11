@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Kelompok
- * 
+ *
  * Master data untuk kelompok (group)
  * Digunakan untuk mengkategorikan anggota
  * Akan digunakan oleh modul Pinjaman di fase selanjutnya
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas

@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Services\AccountingService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Model AngsuranPinjaman
- * 
+ *
  * Transaksi pembayaran angsuran pinjaman
  * Mencatat setiap pembayaran angsuran (pokok, jasa, denda)
- * 
+ *
  * Catatan:
  * - Saldo pinjaman TIDAK disimpan di database
  * - Semua saldo dihitung dari transaksi
@@ -54,38 +56,39 @@ class AngsuranPinjaman extends Model
         static::created(function (AngsuranPinjaman $angsuran) {
             $angsuran->load('pinjaman.anggota');
             $pinjaman = $angsuran->pinjaman;
-            
+
             // Update status pinjaman
             $pinjaman->updateStatusFromSisa();
-            
+
             // Get akun
-            $akunKas = \App\Models\Akun::aktif()
+            $akunKas = Akun::aktif()
                 ->where('nama_akun', 'Kas')
                 ->first();
-            
-            $akunPiutang = \App\Models\Akun::aktif()
+
+            $akunPiutang = Akun::aktif()
                 ->where('nama_akun', 'Piutang Pinjaman Anggota')
                 ->first();
-            
-            $akunPendapatanJasa = \App\Models\Akun::aktif()
+
+            $akunPendapatanJasa = Akun::aktif()
                 ->where('nama_akun', 'like', '%Pendapatan Jasa Pinjaman%')
                 ->orWhere('nama_akun', 'like', '%Pendapatan Jasa%')
                 ->first();
-            
-            $akunPendapatanDenda = \App\Models\Akun::aktif()
+
+            $akunPendapatanDenda = Akun::aktif()
                 ->where('nama_akun', 'like', '%Denda%')
                 ->first();
-            
-            if (!$akunKas || !$akunPiutang) {
-                \Illuminate\Support\Facades\Log::warning("Akun tidak ditemukan untuk angsuran {$angsuran->id}");
+
+            if (! $akunKas || ! $akunPiutang) {
+                Log::warning("Akun tidak ditemukan untuk angsuran {$angsuran->id}");
+
                 return;
             }
-            
+
             // Get unit usaha USP
-            $unitUsaha = \App\Models\UnitUsaha::where('desa_id', $pinjaman->desa_id)
+            $unitUsaha = UnitUsaha::where('desa_id', $pinjaman->desa_id)
                 ->where('kode_unit', 'USP')
                 ->first();
-            
+
             // Create TransaksiKas
             $transaksiKas = TransaksiKas::create([
                 'desa_id' => $pinjaman->desa_id,
@@ -98,9 +101,9 @@ class AngsuranPinjaman extends Model
                 'jumlah' => $angsuran->total_dibayar,
                 'angsuran_pinjaman_id' => $angsuran->id,
             ]);
-            
+
             // Auto-create Jurnal (multi-account)
-            $accountingService = app(\App\Services\AccountingService::class);
+            $accountingService = app(AccountingService::class);
             $details = [
                 [
                     'akun_id' => $akunKas->id,
@@ -109,7 +112,7 @@ class AngsuranPinjaman extends Model
                     'keterangan' => 'Kas masuk',
                 ],
             ];
-            
+
             // Kredit: Piutang (pokok)
             if ($angsuran->pokok_dibayar > 0) {
                 $details[] = [
@@ -119,7 +122,7 @@ class AngsuranPinjaman extends Model
                     'keterangan' => 'Pelunasan pokok pinjaman',
                 ];
             }
-            
+
             // Kredit: Pendapatan Jasa (jasa)
             if ($angsuran->jasa_dibayar > 0 && $akunPendapatanJasa) {
                 $details[] = [
@@ -129,7 +132,7 @@ class AngsuranPinjaman extends Model
                     'keterangan' => 'Pendapatan jasa pinjaman',
                 ];
             }
-            
+
             // Kredit: Pendapatan Denda (denda, jika ada)
             if ($angsuran->denda_dibayar > 0 && $akunPendapatanDenda) {
                 $details[] = [
@@ -139,7 +142,7 @@ class AngsuranPinjaman extends Model
                     'keterangan' => 'Pendapatan denda keterlambatan',
                 ];
             }
-            
+
             $accountingService->createJurnal([
                 'desa_id' => $pinjaman->desa_id,
                 'unit_usaha_id' => $unitUsaha?->id,
@@ -158,7 +161,7 @@ class AngsuranPinjaman extends Model
         static::deleting(function ($angsuran) {
             // Simpan pinjaman_id sebelum model dihapus
             $pinjamanId = $angsuran->pinjaman_id;
-            
+
             // Setelah model dihapus, update status pinjaman
             static::deleted(function () use ($pinjamanId) {
                 $pinjaman = Pinjaman::find($pinjamanId);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Desa;
+use App\Models\Kelompok;
 use App\Models\User;
 
 it('menolak admin desa tanpa desa_id mengakses halaman data desa', function () {
@@ -35,7 +36,7 @@ it('menolak admin desa membuka halaman edit milik desa lain berdasarkan scope', 
     $adminB = User::factory()->adminDesa($desaB->id, $desaB->kecamatan_id)->create();
 
     $this->actingAs($adminB);
-    $kelompokB = \App\Models\Kelompok::create([
+    $kelompokB = Kelompok::create([
         'desa_id' => $desaB->id,
         'nama_kelompok' => 'Kelompok Desa B',
         'status' => 'aktif',

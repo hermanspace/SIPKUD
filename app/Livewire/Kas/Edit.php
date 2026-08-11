@@ -18,21 +18,27 @@ use Livewire\Component;
 class Edit extends Component
 {
     public TransaksiKas $transaksi;
-    
+
     public $tanggal_transaksi;
+
     public $unit_usaha_id;
+
     public $jenis_transaksi;
+
     public $akun_kas_id;
+
     public $akun_lawan_id;
+
     public $jumlah;
+
     public $uraian;
 
     public function mount($id): void
     {
         Gate::authorize('admin_desa');
-        
+
         $this->transaksi = TransaksiKas::with('jurnal')->findOrFail($id);
-        
+
         // Load data
         $this->tanggal_transaksi = $this->transaksi->tanggal_transaksi->format('Y-m-d');
         $this->unit_usaha_id = $this->transaksi->unit_usaha_id;
@@ -46,7 +52,7 @@ class Edit extends Component
     public function update(AccountingService $accountingService): void
     {
         Gate::authorize('admin_desa');
-        
+
         // Validasi periode tidak boleh closed
         $periode = Carbon::parse($this->tanggal_transaksi)->format('Y-m');
         if ($accountingService->isPeriodClosed($this->transaksi->desa_id, $periode, $this->unit_usaha_id)) {
@@ -57,7 +63,7 @@ class Edit extends Component
                 ),
             ]);
         }
-        
+
         $this->validate([
             'tanggal_transaksi' => 'required|date',
             'jenis_transaksi' => 'required|in:masuk,keluar',
@@ -82,7 +88,7 @@ class Edit extends Component
 
                 // Update atau create jurnal
                 $details = [];
-                
+
                 if ($this->jenis_transaksi === 'masuk') {
                     $details = [
                         [
@@ -146,36 +152,36 @@ class Edit extends Component
         } catch (ValidationException $e) {
             $this->dispatch('error', message: $e->getMessage());
         } catch (\Exception $e) {
-            $this->dispatch('error', message: 'Terjadi kesalahan: ' . $e->getMessage());
+            $this->dispatch('error', message: 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function render()
     {
         $user = Auth::user();
-        
+
         $unitUsahaList = UnitUsaha::where('desa_id', $user->desa_id)
-                                   ->aktif()
-                                   ->orderBy('nama_unit')
-                                   ->get();
-        
+            ->aktif()
+            ->orderBy('nama_unit')
+            ->get();
+
         $akunKasList = Akun::aktif()
-                           ->where('tipe_akun', 'aset')
-                           ->where(function($q) {
-                               $q->where('kode_akun', 'like', '1-10%')
-                                 ->orWhere('nama_akun', 'like', '%kas%')
-                                 ->orWhere('nama_akun', 'like', '%bank%');
-                           })
-                           ->aktif()
-                           ->orderBy('kode_akun')
-                           ->get();
-        
+            ->where('tipe_akun', 'aset')
+            ->where(function ($q) {
+                $q->where('kode_akun', 'like', '1-10%')
+                    ->orWhere('nama_akun', 'like', '%kas%')
+                    ->orWhere('nama_akun', 'like', '%bank%');
+            })
+            ->aktif()
+            ->orderBy('kode_akun')
+            ->get();
+
         $akunLawanList = Akun::aktif()
-                             ->aktif()
-                             ->orderBy('kode_akun')
-                             ->get()
-                             ->groupBy('tipe_akun');
-        
+            ->aktif()
+            ->orderBy('kode_akun')
+            ->get()
+            ->groupBy('tipe_akun');
+
         return view('livewire.kas.edit', [
             'unitUsahaList' => $unitUsahaList,
             'akunKasList' => $akunKasList,

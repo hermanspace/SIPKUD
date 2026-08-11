@@ -5,6 +5,7 @@ namespace App\Livewire\Pinjaman;
 use App\Models\Anggota;
 use App\Models\Pinjaman;
 use App\Models\SektorUsaha;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,22 +15,29 @@ use Livewire\Component;
 class Create extends Component
 {
     public ?int $anggota_id = null;
+
     public ?int $sektor_usaha_id = null;
+
     public string $tanggal_pinjaman = '';
+
     public string $jumlah_pinjaman = '';
+
     public string $jangka_waktu_bulan = '';
+
     public string $jasa_persen = '';
+
     public string $status_pinjaman = 'aktif';
 
     /** Untuk form "Tambah sektor usaha baru" */
     public bool $show_new_sektor = false;
+
     public string $new_sektor_nama = '';
 
     public function mount(): void
     {
         // Hanya Admin Desa yang bisa membuat pinjaman
         Gate::authorize('admin_desa');
-        
+
         // Set default tanggal ke hari ini
         $this->tanggal_pinjaman = now()->format('Y-m-d');
     }
@@ -65,9 +73,9 @@ class Create extends Component
 
         // Pastikan hanya admin desa yang bisa membuat pinjaman
         Gate::authorize('admin_desa');
-        
+
         $user = Auth::user();
-        if (!$user->desa_id) {
+        if (! $user->desa_id) {
             abort(403, 'Anda tidak memiliki izin untuk membuat pinjaman.');
         }
 
@@ -75,6 +83,7 @@ class Create extends Component
         $anggota = Anggota::findOrFail($validated['anggota_id']);
         if ($anggota->status !== 'aktif') {
             $this->addError('anggota_id', 'Anggota yang dipilih tidak aktif.');
+
             return;
         }
 
@@ -82,9 +91,10 @@ class Create extends Component
         $pinjamanAktif = Pinjaman::where('anggota_id', $validated['anggota_id'])
             ->where('status_pinjaman', 'aktif')
             ->exists();
-        
+
         if ($pinjamanAktif) {
             $this->addError('anggota_id', 'Anggota ini sudah memiliki pinjaman aktif.');
+
             return;
         }
 
@@ -97,7 +107,7 @@ class Create extends Component
         $validated['jumlah_pinjaman'] = (float) $validated['jumlah_pinjaman'];
         $validated['jangka_waktu_bulan'] = (int) $validated['jangka_waktu_bulan'];
         $validated['jasa_persen'] = (float) $validated['jasa_persen'];
-        $validated['tanggal_pinjaman'] = \Carbon\Carbon::parse($validated['tanggal_pinjaman']);
+        $validated['tanggal_pinjaman'] = Carbon::parse($validated['tanggal_pinjaman']);
 
         Pinjaman::create($validated);
 
@@ -113,13 +123,13 @@ class Create extends Component
     {
         $date = now()->format('Ymd');
         $prefix = "PINJ-{$date}-";
-        
+
         // Cari nomor terakhir untuk tanggal hari ini
         $lastPinjaman = Pinjaman::where('desa_id', $desaId)
-            ->where('nomor_pinjaman', 'like', $prefix . '%')
+            ->where('nomor_pinjaman', 'like', $prefix.'%')
             ->orderBy('nomor_pinjaman', 'desc')
             ->first();
-        
+
         if ($lastPinjaman) {
             // Extract nomor urut dari nomor terakhir
             $lastNumber = (int) substr($lastPinjaman->nomor_pinjaman, -3);
@@ -127,8 +137,8 @@ class Create extends Component
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -165,7 +175,7 @@ class Create extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Get anggota aktif untuk dropdown
         $anggotaQuery = Anggota::aktif();
         if ($user && $user->desa_id) {

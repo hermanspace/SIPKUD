@@ -16,29 +16,36 @@ use Livewire\Component;
 class Edit extends Component
 {
     public User $user;
+
     public string $nama = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
+
     public string $role = 'admin_desa';
+
     public ?int $kecamatan_id = null;
+
     public ?int $desa_id = null;
 
     public function mount(User $user): void
     {
         $currentUser = Auth::user();
-        
+
         // Super Admin dan Admin Kecamatan dapat mengedit pengguna
         if ($currentUser->isSuperAdmin()) {
             Gate::authorize('super_admin');
         } else {
             Gate::authorize('admin_kecamatan');
             // Admin Kecamatan hanya bisa mengedit admin_desa di kecamatannya
-            if (!$user->isAdminDesa() || $user->kecamatan_id !== $currentUser->kecamatan_id) {
+            if (! $user->isAdminDesa() || $user->kecamatan_id !== $currentUser->kecamatan_id) {
                 abort(403, 'Anda tidak memiliki izin untuk mengedit pengguna ini.');
             }
         }
-        
+
         $this->user = $user;
         $this->nama = $user->nama;
         $this->email = $user->email;
@@ -57,7 +64,7 @@ class Edit extends Component
             // Admin Kecamatan tidak memiliki desa_id
             $this->desa_id = null;
         }
-        
+
         // Jika user adalah Admin Kecamatan, mereka hanya bisa mengedit menjadi admin_desa
         if (Auth::user()->isAdminKecamatan() && $this->role !== 'admin_desa') {
             $this->role = 'admin_desa';
@@ -74,14 +81,14 @@ class Edit extends Component
     public function update(): void
     {
         $user = Auth::user();
-        
+
         // Validasi role berdasarkan user yang mengedit
         $allowedRoles = ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view'];
         if ($user->isAdminKecamatan()) {
             // Admin Kecamatan hanya bisa mengubah menjadi admin_desa
             $allowedRoles = ['admin_desa'];
         }
-        
+
         $rules = [
             'nama' => ['required', 'string', 'max:255'],
             'email' => [
@@ -91,18 +98,18 @@ class Edit extends Component
                 'max:255',
                 Rule::unique('users')->ignore($this->user->id),
             ],
-            'role' => ['required', 'in:' . implode(',', $allowedRoles)],
+            'role' => ['required', 'in:'.implode(',', $allowedRoles)],
             'kecamatan_id' => [
                 'nullable',
                 'required_if:role,admin_kecamatan,admin_desa,executive_view',
-                'exists:kecamatan,id'
+                'exists:kecamatan,id',
             ],
             'desa_id' => [
                 'nullable',
                 'required_if:role,admin_desa,executive_view',
                 'exists:desa,id',
                 function ($attribute, $value, $fail) {
-                    if (!in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
+                    if (! in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
                         $desa = Desa::find($value);
                         if ($desa && $desa->kecamatan_id !== $this->kecamatan_id) {
                             $fail('Desa harus berada di kecamatan yang dipilih.');
@@ -113,7 +120,7 @@ class Edit extends Component
         ];
 
         // Only require password if it's being changed
-        if (!empty($this->password)) {
+        if (! empty($this->password)) {
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
         }
 
@@ -137,10 +144,12 @@ class Edit extends Component
         if ($user->isAdminKecamatan()) {
             if ($validated['role'] !== 'admin_desa') {
                 $this->dispatch('error', message: 'Anda hanya dapat mengubah menjadi Admin Desa.');
+
                 return;
             }
             if ($validated['kecamatan_id'] !== $user->kecamatan_id) {
                 $this->dispatch('error', message: 'Anda hanya dapat mengubah ke kecamatan Anda.');
+
                 return;
             }
         }
@@ -158,7 +167,7 @@ class Edit extends Component
             $validated['kecamatan_id'] = null;
             $validated['desa_id'] = null;
         }
-        
+
         // Set desa_id to null for admin_kecamatan
         if ($validated['role'] === 'admin_kecamatan') {
             $validated['desa_id'] = null;
@@ -168,6 +177,7 @@ class Edit extends Component
         if ($this->user->isSuperAdmin() && $validated['role'] !== 'super_admin') {
             if (User::where('role', 'super_admin')->where('id', '!=', $this->user->id)->count() === 0) {
                 $this->dispatch('error', message: 'Tidak dapat mengubah role super admin terakhir.');
+
                 return;
             }
         }
@@ -181,15 +191,15 @@ class Edit extends Component
     public function render()
     {
         $user = Auth::user();
-        
+
         // Jika Admin Kecamatan, hanya tampilkan kecamatan mereka
         if ($user->isAdminKecamatan()) {
             $kecamatan = Kecamatan::where('id', $user->kecamatan_id)->get();
         } else {
             $kecamatan = Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
         }
-        
-        $desa = $this->kecamatan_id 
+
+        $desa = $this->kecamatan_id
             ? Desa::where('kecamatan_id', $this->kecamatan_id)->aktif()->orderBy('nama_desa')->get()
             : collect();
 

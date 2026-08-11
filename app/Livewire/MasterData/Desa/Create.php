@@ -12,8 +12,11 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $nama_desa = '';
+
     public string $kode_desa = '';
+
     public ?int $kecamatan_id = null;
+
     public string $status = 'aktif';
 
     public function mount(): void

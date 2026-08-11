@@ -8,11 +8,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * TenantMiddleware
- * 
+ *
  * Middleware untuk memastikan user hanya dapat mengakses data dari desa mereka
  * Super Admin dapat mengakses semua data tanpa batasan
  * Admin Kecamatan dapat mengakses semua data di kecamatannya
- * 
+ *
  * Catatan: Modul-modul berikut akan dikembangkan di fase selanjutnya:
  * - Pinjaman
  * - Kas
@@ -25,11 +25,11 @@ class TenantMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return $next($request);
         }
 
@@ -43,14 +43,15 @@ class TenantMiddleware
         // Admin Kecamatan dapat mengakses semua data di kecamatannya
         if ($user->isAdminKecamatan()) {
             // Admin Kecamatan harus memiliki kecamatan_id
-            if (!$user->kecamatan_id) {
+            if (! $user->kecamatan_id) {
                 abort(403, 'Anda tidak memiliki akses ke kecamatan tertentu.');
             }
+
             return $next($request);
         }
 
         // Admin Desa dan Executive View harus memiliki desa_id
-        if (!$user->desa_id) {
+        if (! $user->desa_id) {
             abort(403, 'Anda tidak memiliki akses ke desa tertentu.');
         }
 

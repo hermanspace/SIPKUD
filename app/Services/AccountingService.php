@@ -6,17 +6,17 @@ use App\Models\Akun;
 use App\Models\Jurnal;
 use App\Models\JurnalDetail;
 use App\Models\NeracaSaldo;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * AccountingService
- * 
+ *
  * Service untuk menangani operasi akuntansi double entry
  * Prinsip utama: Debit = Kredit (always balanced)
- * 
+ *
  * PENTING: Semua transaksi harus melalui service ini
  * untuk memastikan integritas data akuntansi
  */
@@ -25,9 +25,8 @@ class AccountingService
     /**
      * Buat jurnal baru dengan validasi double entry
      *
-     * @param array $data
-     * @param bool $allowClosedPeriod Izinkan pembuatan jurnal pada periode closed (khusus saldo awal)
-     * @return Jurnal
+     * @param  bool  $allowClosedPeriod  Izinkan pembuatan jurnal pada periode closed (khusus saldo awal)
+     *
      * @throws ValidationException
      */
     public function createJurnal(array $data, bool $allowClosedPeriod = false): Jurnal
@@ -54,7 +53,7 @@ class AccountingService
         return DB::transaction(function () use ($data) {
             // Hitung total debit dan kredit
             $totals = $this->calculateTotals($data['details']);
-            
+
             // Buat header jurnal
             $jurnal = Jurnal::create([
                 'desa_id' => $data['desa_id'],
@@ -70,7 +69,7 @@ class AccountingService
                 'angsuran_pinjaman_id' => $data['angsuran_pinjaman_id'] ?? null,
                 'created_by' => Auth::id(),
             ]);
-            
+
             // Buat detail jurnal
             foreach ($data['details'] as $detail) {
                 JurnalDetail::create([
@@ -81,22 +80,19 @@ class AccountingService
                     'keterangan' => $detail['keterangan'] ?? null,
                 ]);
             }
-            
+
             // Auto-post ke ledger jika status = 'posted'
             if ($jurnal->status === 'posted') {
                 $this->postToLedger($jurnal);
             }
-            
+
             return $jurnal->load('details.akun');
         });
     }
 
     /**
      * Update jurnal existing
-     * 
-     * @param Jurnal $jurnal
-     * @param array $data
-     * @return Jurnal
+     *
      * @throws ValidationException
      */
     public function updateJurnal(Jurnal $jurnal, array $data): Jurnal
@@ -107,7 +103,7 @@ class AccountingService
                 'status' => 'Hanya jurnal dengan status draft yang dapat diubah.',
             ]);
         }
-        
+
         // Validasi periode tidak boleh closed
         $periode = Carbon::parse($jurnal->tanggal_transaksi)->format('Y-m');
         if ($this->isPeriodClosed($jurnal->desa_id, $periode, $jurnal->unit_usaha_id)) {
@@ -118,20 +114,20 @@ class AccountingService
                 ),
             ]);
         }
-        
+
         // Validasi data
         $this->validateJurnalData($data);
-        
+
         // Validasi balance
         $this->validateBalance($data['details']);
-        
+
         return DB::transaction(function () use ($jurnal, $data) {
             // Hapus detail lama
             $jurnal->details()->delete();
-            
+
             // Hitung total baru
             $totals = $this->calculateTotals($data['details']);
-            
+
             // Update header
             $jurnal->update([
                 'unit_usaha_id' => $data['unit_usaha_id'] ?? $jurnal->unit_usaha_id,
@@ -142,7 +138,7 @@ class AccountingService
                 'total_kredit' => $totals['kredit'],
                 'updated_by' => Auth::id(),
             ]);
-            
+
             // Buat detail baru
             foreach ($data['details'] as $detail) {
                 JurnalDetail::create([
@@ -153,7 +149,7 @@ class AccountingService
                     'keterangan' => $detail['keterangan'] ?? null,
                 ]);
             }
-            
+
             return $jurnal->fresh(['details.akun']);
         });
     }
@@ -162,10 +158,6 @@ class AccountingService
      * Update jurnal saldo awal (khusus).
      * Mengizinkan update jurnal posted dan mengabaikan periode closed,
      * lalu recalculate neraca_saldo untuk periode tersebut.
-     *
-     * @param Jurnal $jurnal
-     * @param array $data
-     * @return Jurnal
      */
     public function updateJurnalForSaldoAwal(Jurnal $jurnal, array $data): Jurnal
     {
@@ -206,9 +198,6 @@ class AccountingService
 
     /**
      * Void jurnal (pembatalan)
-     * 
-     * @param Jurnal $jurnal
-     * @return Jurnal
      */
     public function voidJurnal(Jurnal $jurnal): Jurnal
     {
@@ -222,37 +211,34 @@ class AccountingService
                 ),
             ]);
         }
-        
+
         $jurnal->update([
             'status' => 'void',
             'updated_by' => Auth::id(),
         ]);
-        
+
         return $jurnal;
     }
 
     /**
      * Post jurnal (dari draft ke posted)
-     * 
-     * @param Jurnal $jurnal
-     * @return Jurnal
      */
     public function postJurnal(Jurnal $jurnal): Jurnal
     {
-        if (!$jurnal->isBalanced()) {
+        if (! $jurnal->isBalanced()) {
             throw ValidationException::withMessages([
                 'balance' => 'Jurnal tidak balance (debit ≠ kredit).',
             ]);
         }
-        
+
         $jurnal->update([
             'status' => 'posted',
             'updated_by' => Auth::id(),
         ]);
-        
+
         // Auto-post ke ledger setelah status menjadi 'posted'
         $this->postToLedger($jurnal);
-        
+
         return $jurnal;
     }
 
@@ -260,26 +246,23 @@ class AccountingService
      * Get Neraca Saldo dari tabel neraca_saldo (ledger)
      * Format lengkap: Saldo Awal, Mutasi, Saldo Akhir
      * Semua akun tampil (termasuk yang tanpa transaksi)
-     * 
-     * @param int $desaId
-     * @param string $periode Format: YYYY-MM (contoh: 2026-01)
-     * @param int|null $unitUsahaId
-     * @return array
+     *
+     * @param  string  $periode  Format: YYYY-MM (contoh: 2026-01)
      */
     public function getNeracaSaldoFromLedger(int $desaId, string $periode, ?int $unitUsahaId = null): array
     {
         // Query semua akun dengan LEFT JOIN ke neraca_saldo
         // Semua akun akan tampil, termasuk yang tanpa transaksi
         // Gunakan withoutGlobalScopes() untuk menghindari konflik dengan HasDesaScope
-        
+
         if ($unitUsahaId !== null) {
             // Filter by unit usaha tertentu
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode, $unitUsahaId) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode)
-                         ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode)
+                        ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereNull('akun.deleted_at')
@@ -296,15 +279,15 @@ class AccountingService
                     DB::raw('COALESCE(neraca_saldo.saldo_akhir_kredit, 0) as saldo_akhir_kredit')
                 )
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         } else {
             // Aggregate semua unit usaha (termasuk yang null)
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereNull('akun.deleted_at')
@@ -322,10 +305,10 @@ class AccountingService
                 )
                 ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         }
-        
+
         return $results->map(function ($item) {
             return [
                 'akun_id' => (int) $item->akun_id,
@@ -344,13 +327,8 @@ class AccountingService
 
     /**
      * Hitung neraca saldo untuk periode tertentu (LEGACY - dari jurnal)
-     * 
+     *
      * @deprecated Gunakan getNeracaSaldoFromLedger() untuk format lengkap
-     * @param int $desaId
-     * @param int|null $bulan
-     * @param int|null $tahun
-     * @param int|null $unitUsahaId
-     * @return array
      */
     public function getNeracaSaldo(int $desaId, ?int $bulan = null, ?int $tahun = null, ?int $unitUsahaId = null): array
     {
@@ -359,20 +337,20 @@ class AccountingService
             ->join('akun', 'jurnal_detail.akun_id', '=', 'akun.id')
             ->where('jurnal.desa_id', $desaId)
             ->where('jurnal.status', 'posted');
-        
+
         // Filter unit usaha
         if ($unitUsahaId) {
             $query->where('jurnal.unit_usaha_id', $unitUsahaId);
         }
-        
+
         // Filter periode
         if ($bulan && $tahun) {
             $query->whereMonth('jurnal.tanggal_transaksi', $bulan)
-                  ->whereYear('jurnal.tanggal_transaksi', $tahun);
+                ->whereYear('jurnal.tanggal_transaksi', $tahun);
         } elseif ($tahun) {
             $query->whereYear('jurnal.tanggal_transaksi', $tahun);
         }
-        
+
         // Group by akun dan hitung total debit/kredit
         $results = $query->select(
             'akun.id',
@@ -382,15 +360,15 @@ class AccountingService
             DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
             DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
         )
-        ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
-        ->orderBy('akun.kode_akun')
-        ->get();
-        
+            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
+            ->orderBy('akun.kode_akun')
+            ->get();
+
         // Hitung saldo per akun berdasarkan normal balance
         $neracaSaldo = $results->map(function ($item) {
             // Normal balance: Aset & Beban = Debit, Kewajiban & Ekuitas & Pendapatan = Kredit
             $normalDebit = in_array($item->tipe_akun, ['aset', 'beban']);
-            
+
             if ($normalDebit) {
                 $saldo = $item->total_debit - $item->total_kredit;
                 $posisiSaldo = $saldo >= 0 ? 'debit' : 'kredit';
@@ -398,7 +376,7 @@ class AccountingService
                 $saldo = $item->total_kredit - $item->total_debit;
                 $posisiSaldo = $saldo >= 0 ? 'kredit' : 'debit';
             }
-            
+
             return [
                 'akun_id' => $item->id,
                 'kode_akun' => $item->kode_akun,
@@ -410,23 +388,20 @@ class AccountingService
                 'posisi_saldo' => $posisiSaldo,
             ];
         });
-        
+
         return $neracaSaldo->toArray();
     }
 
     /**
      * Get Laba Rugi dari tabel neraca_saldo (ledger)
      * Support 2 mode: Bulanan (mutasi) dan Kumulatif (saldo akhir)
-     * 
-     * @param int $desaId
-     * @param string $periode Format: YYYY-MM (contoh: 2026-01)
-     * @param string $mode 'bulanan' atau 'kumulatif'
-     * @param int|null $unitUsahaId
-     * @return array
+     *
+     * @param  string  $periode  Format: YYYY-MM (contoh: 2026-01)
+     * @param  string  $mode  'bulanan' atau 'kumulatif'
      */
     public function getLabaRugiFromLedger(
-        int $desaId, 
-        string $periode, 
+        int $desaId,
+        string $periode,
         string $mode = 'bulanan',
         ?int $unitUsahaId = null
     ): array {
@@ -436,9 +411,9 @@ class AccountingService
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode, $unitUsahaId) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode)
-                         ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode)
+                        ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereIn('akun.tipe_akun', ['pendapatan', 'beban'])
@@ -454,15 +429,15 @@ class AccountingService
                     DB::raw('COALESCE(neraca_saldo.saldo_akhir_kredit, 0) as saldo_akhir_kredit')
                 )
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         } else {
             // Aggregate semua unit usaha
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereIn('akun.tipe_akun', ['pendapatan', 'beban'])
@@ -479,23 +454,23 @@ class AccountingService
                 )
                 ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         }
-        
+
         // Pisahkan pendapatan dan beban
         $pendapatanList = [];
         $bebanList = [];
-        
+
         foreach ($results as $item) {
             if ($mode === 'bulanan') {
                 // Mode Bulanan: gunakan mutasi
                 // Pendapatan: normal kredit, jadi jumlah = mutasi_kredit
                 // Beban: normal debit, jadi jumlah = mutasi_debit
-                $jumlah = $item->tipe_akun === 'pendapatan' 
-                    ? (float) $item->mutasi_kredit 
+                $jumlah = $item->tipe_akun === 'pendapatan'
+                    ? (float) $item->mutasi_kredit
                     : (float) $item->mutasi_debit;
-                
+
                 $data = [
                     'akun_id' => (int) $item->akun_id,
                     'kode_akun' => $item->kode_akun,
@@ -508,10 +483,10 @@ class AccountingService
                 // Mode Kumulatif: gunakan saldo akhir
                 // Pendapatan: normal kredit, jadi jumlah = saldo_akhir_kredit
                 // Beban: normal debit, jadi jumlah = saldo_akhir_debit
-                $jumlah = $item->tipe_akun === 'pendapatan' 
-                    ? (float) $item->saldo_akhir_kredit 
+                $jumlah = $item->tipe_akun === 'pendapatan'
+                    ? (float) $item->saldo_akhir_kredit
                     : (float) $item->saldo_akhir_debit;
-                
+
                 $data = [
                     'akun_id' => (int) $item->akun_id,
                     'kode_akun' => $item->kode_akun,
@@ -521,19 +496,19 @@ class AccountingService
                     'jumlah' => $jumlah,
                 ];
             }
-            
+
             if ($item->tipe_akun === 'pendapatan') {
                 $pendapatanList[] = $data;
             } else {
                 $bebanList[] = $data;
             }
         }
-        
+
         // Hitung total
         $totalPendapatan = collect($pendapatanList)->sum('jumlah');
         $totalBeban = collect($bebanList)->sum('jumlah');
         $labaBersih = $totalPendapatan - $totalBeban;
-        
+
         return [
             'mode' => $mode,
             'periode' => $periode,
@@ -547,28 +522,23 @@ class AccountingService
 
     /**
      * Hitung laba rugi untuk periode tertentu (LEGACY - dari jurnal)
-     * 
+     *
      * @deprecated Gunakan getLabaRugiFromLedger() untuk format lengkap
-     * @param int $desaId
-     * @param int $bulan
-     * @param int $tahun
-     * @param int|null $unitUsahaId
-     * @return array
      */
     public function getLabaRugi(int $desaId, int $bulan, int $tahun, ?int $unitUsahaId = null): array
     {
         $neracaSaldo = $this->getNeracaSaldo($desaId, $bulan, $tahun, $unitUsahaId);
-        
+
         $pendapatan = collect($neracaSaldo)
             ->where('tipe_akun', 'pendapatan')
             ->sum('saldo');
-        
+
         $beban = collect($neracaSaldo)
             ->where('tipe_akun', 'beban')
             ->sum('saldo');
-        
+
         $labaRugi = $pendapatan - $beban;
-        
+
         return [
             'pendapatan' => $pendapatan,
             'beban' => $beban,
@@ -582,11 +552,8 @@ class AccountingService
      * Get Neraca dari tabel neraca_saldo (ledger)
      * Format: ASET, KEWAJIBAN, MODAL
      * Validasi: ASET = KEWAJIBAN + MODAL
-     * 
-     * @param int $desaId
-     * @param string $periode Format: YYYY-MM (contoh: 2026-01)
-     * @param int|null $unitUsahaId
-     * @return array
+     *
+     * @param  string  $periode  Format: YYYY-MM (contoh: 2026-01)
      */
     public function getNeracaFromLedger(int $desaId, string $periode, ?int $unitUsahaId = null): array
     {
@@ -596,9 +563,9 @@ class AccountingService
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode, $unitUsahaId) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode)
-                         ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode)
+                        ->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereIn('akun.tipe_akun', ['aset', 'kewajiban', 'ekuitas'])
@@ -612,15 +579,15 @@ class AccountingService
                     DB::raw('COALESCE(neraca_saldo.saldo_akhir_kredit, 0) as saldo_akhir_kredit')
                 )
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         } else {
             // Aggregate semua unit usaha
             $query = Akun::withoutGlobalScopes()
                 ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode) {
                     $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                         ->where('neraca_saldo.desa_id', '=', $desaId)
-                         ->where('neraca_saldo.periode', '=', $periode);
+                        ->where('neraca_saldo.desa_id', '=', $desaId)
+                        ->where('neraca_saldo.periode', '=', $periode);
                 })
                 ->where('akun.status', 'aktif')
                 ->whereIn('akun.tipe_akun', ['aset', 'kewajiban', 'ekuitas'])
@@ -635,15 +602,15 @@ class AccountingService
                 )
                 ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
                 ->orderBy('akun.kode_akun');
-            
+
             $results = $query->get();
         }
-        
+
         // Pisahkan aset, kewajiban, dan ekuitas
         $asetList = [];
         $kewajibanList = [];
         $modalList = [];
-        
+
         foreach ($results as $item) {
             // Aset: normal debit, jadi saldo = saldo_akhir_debit - saldo_akhir_kredit
             // Kewajiban & Ekuitas: normal kredit, jadi saldo = saldo_akhir_kredit - saldo_akhir_debit
@@ -652,7 +619,7 @@ class AccountingService
             } else {
                 $saldo = (float) $item->saldo_akhir_kredit - (float) $item->saldo_akhir_debit;
             }
-            
+
             $data = [
                 'akun_id' => (int) $item->akun_id,
                 'kode_akun' => $item->kode_akun,
@@ -661,7 +628,7 @@ class AccountingService
                 'saldo_akhir_kredit' => (float) $item->saldo_akhir_kredit,
                 'saldo' => $saldo,
             ];
-            
+
             if ($item->tipe_akun === 'aset') {
                 $asetList[] = $data;
             } elseif ($item->tipe_akun === 'kewajiban') {
@@ -670,16 +637,16 @@ class AccountingService
                 $modalList[] = $data;
             }
         }
-        
+
         // Hitung total
         $totalAset = collect($asetList)->sum('saldo');
         $totalKewajiban = collect($kewajibanList)->sum('saldo');
         $totalModal = collect($modalList)->sum('saldo');
         $totalKewajibanModal = $totalKewajiban + $totalModal;
-        
+
         // Validasi: ASET = KEWAJIBAN + MODAL
         $isBalanced = abs($totalAset - $totalKewajibanModal) < 0.01;
-        
+
         return [
             'periode' => $periode,
             'aset' => $totalAset,
@@ -696,11 +663,8 @@ class AccountingService
 
     /**
      * Get Perubahan Modal untuk periode tertentu
-     * 
-     * @param int $desaId
-     * @param string $periode Format: YYYY-MM
-     * @param int|null $unitUsahaId
-     * @return array
+     *
+     * @param  string  $periode  Format: YYYY-MM
      */
     public function getPerubahanModal(int $desaId, string $periode, ?int $unitUsahaId = null): array
     {
@@ -708,14 +672,14 @@ class AccountingService
         $previousPeriod = Carbon::createFromFormat('Y-m', $periode)
             ->subMonth()
             ->format('Y-m');
-        
+
         // Query akun ekuitas dari periode sebelumnya
         $modalAwalQuery = Akun::withoutGlobalScopes()
             ->leftJoin('neraca_saldo', function ($join) use ($desaId, $previousPeriod, $unitUsahaId) {
                 $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                     ->where('neraca_saldo.desa_id', '=', $desaId)
-                     ->where('neraca_saldo.periode', '=', $previousPeriod);
-                
+                    ->where('neraca_saldo.desa_id', '=', $desaId)
+                    ->where('neraca_saldo.periode', '=', $previousPeriod);
+
                 if ($unitUsahaId !== null) {
                     $join->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
                 } else {
@@ -729,24 +693,24 @@ class AccountingService
                 DB::raw('COALESCE(neraca_saldo.saldo_akhir_debit, 0) as saldo_akhir_debit'),
                 DB::raw('COALESCE(neraca_saldo.saldo_akhir_kredit, 0) as saldo_akhir_kredit')
             );
-        
+
         $modalAwalResults = $modalAwalQuery->get();
         $modalAwal = $modalAwalResults->sum(function ($item) {
             // Ekuitas normal kredit, jadi saldo = saldo_akhir_kredit - saldo_akhir_debit
             return (float) $item->saldo_akhir_kredit - (float) $item->saldo_akhir_debit;
         });
-        
+
         // 2. Laba Bersih: Dari laba rugi kumulatif
         $labaRugi = $this->getLabaRugiFromLedger($desaId, $periode, 'kumulatif', $unitUsahaId);
         $labaBersih = $labaRugi['laba_bersih'] ?? 0;
-        
+
         // 3. Prive: Saldo akhir akun prive (jika ada)
         $priveQuery = Akun::withoutGlobalScopes()
             ->leftJoin('neraca_saldo', function ($join) use ($desaId, $periode, $unitUsahaId) {
                 $join->on('neraca_saldo.akun_id', '=', 'akun.id')
-                     ->where('neraca_saldo.desa_id', '=', $desaId)
-                     ->where('neraca_saldo.periode', '=', $periode);
-                
+                    ->where('neraca_saldo.desa_id', '=', $desaId)
+                    ->where('neraca_saldo.periode', '=', $periode);
+
                 if ($unitUsahaId !== null) {
                     $join->where('neraca_saldo.unit_usaha_id', '=', $unitUsahaId);
                 } else {
@@ -756,7 +720,7 @@ class AccountingService
             ->where('akun.status', 'aktif')
             ->where(function ($q) {
                 $q->where('akun.nama_akun', 'like', '%prive%')
-                  ->orWhere('akun.kode_akun', 'like', '%prive%');
+                    ->orWhere('akun.kode_akun', 'like', '%prive%');
             })
             ->whereNull('akun.deleted_at')
             ->select(
@@ -766,9 +730,10 @@ class AccountingService
                 DB::raw('COALESCE(neraca_saldo.saldo_akhir_debit, 0) as saldo_akhir_debit'),
                 DB::raw('COALESCE(neraca_saldo.saldo_akhir_kredit, 0) as saldo_akhir_kredit')
             );
-        
+
         $priveList = $priveQuery->get()->map(function ($item) {
             $saldo = (float) $item->saldo_akhir_debit - (float) $item->saldo_akhir_kredit;
+
             return [
                 'akun_id' => (int) $item->akun_id,
                 'kode_akun' => $item->kode_akun,
@@ -776,12 +741,12 @@ class AccountingService
                 'saldo' => $saldo,
             ];
         })->toArray();
-        
+
         $totalPrive = collect($priveList)->sum('saldo');
-        
+
         // 4. Modal Akhir: Modal Awal + Laba Bersih + Prive
         $modalAkhir = $modalAwal + $labaBersih + $totalPrive;
-        
+
         return [
             'periode' => $periode,
             'modal_awal' => (float) $modalAwal,
@@ -794,12 +759,10 @@ class AccountingService
 
     /**
      * Hitung neraca (balance sheet) pada tanggal tertentu (LEGACY - dari jurnal)
-     * 
+     *
      * @deprecated Gunakan getNeracaFromLedger() untuk format lengkap
-     * @param int $desaId
-     * @param string $tanggal (Y-m-d)
-     * @param int|null $unitUsahaId
-     * @return array
+     *
+     * @param  string  $tanggal  (Y-m-d)
      */
     public function getNeraca(int $desaId, string $tanggal, ?int $unitUsahaId = null): array
     {
@@ -809,11 +772,11 @@ class AccountingService
             ->where('jurnal.desa_id', $desaId)
             ->where('jurnal.status', 'posted')
             ->where('jurnal.tanggal_transaksi', '<=', $tanggal);
-        
+
         if ($unitUsahaId) {
             $query->where('jurnal.unit_usaha_id', $unitUsahaId);
         }
-        
+
         $results = $query->select(
             'akun.id',
             'akun.kode_akun',
@@ -822,20 +785,20 @@ class AccountingService
             DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'debit' THEN jurnal_detail.jumlah ELSE 0 END) as total_debit"),
             DB::raw("SUM(CASE WHEN jurnal_detail.posisi = 'kredit' THEN jurnal_detail.jumlah ELSE 0 END) as total_kredit")
         )
-        ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
-        ->orderBy('akun.kode_akun')
-        ->get();
-        
+            ->groupBy('akun.id', 'akun.kode_akun', 'akun.nama_akun', 'akun.tipe_akun')
+            ->orderBy('akun.kode_akun')
+            ->get();
+
         // Hitung saldo per akun
         $saldoAkun = $results->map(function ($item) {
             $normalDebit = in_array($item->tipe_akun, ['aset', 'beban']);
-            
+
             if ($normalDebit) {
                 $saldo = $item->total_debit - $item->total_kredit;
             } else {
                 $saldo = $item->total_kredit - $item->total_debit;
             }
-            
+
             return [
                 'akun_id' => $item->id,
                 'kode_akun' => $item->kode_akun,
@@ -844,11 +807,11 @@ class AccountingService
                 'saldo' => $saldo,
             ];
         });
-        
+
         $aset = $saldoAkun->where('tipe_akun', 'aset')->sum('saldo');
         $kewajiban = $saldoAkun->where('tipe_akun', 'kewajiban')->sum('saldo');
         $ekuitas = $saldoAkun->where('tipe_akun', 'ekuitas')->sum('saldo');
-        
+
         return [
             'aset' => $aset,
             'kewajiban' => $kewajiban,
@@ -869,16 +832,16 @@ class AccountingService
                 'details' => 'Jurnal harus memiliki minimal 2 baris (debit dan kredit).',
             ]);
         }
-        
+
         // Validasi akun exists
         foreach ($data['details'] as $detail) {
             $akun = Akun::find($detail['akun_id']);
-            if (!$akun) {
+            if (! $akun) {
                 throw ValidationException::withMessages([
                     'akun_id' => "Akun dengan ID {$detail['akun_id']} tidak ditemukan.",
                 ]);
             }
-            
+
             if ($akun->status !== 'aktif') {
                 throw ValidationException::withMessages([
                     'akun_id' => "Akun {$akun->nama_akun} tidak aktif.",
@@ -893,7 +856,7 @@ class AccountingService
     protected function validateBalance(array $details): void
     {
         $totals = $this->calculateTotals($details);
-        
+
         // Gunakan bccomp untuk perbandingan decimal yang akurat
         if (bccomp($totals['debit'], $totals['kredit'], 2) !== 0) {
             throw ValidationException::withMessages([
@@ -913,7 +876,7 @@ class AccountingService
     {
         $totalDebit = '0';
         $totalKredit = '0';
-        
+
         foreach ($details as $detail) {
             if ($detail['posisi'] === 'debit') {
                 $totalDebit = bcadd($totalDebit, $detail['jumlah'], 2);
@@ -921,7 +884,7 @@ class AccountingService
                 $totalKredit = bcadd($totalKredit, $detail['jumlah'], 2);
             }
         }
-        
+
         return [
             'debit' => $totalDebit,
             'kredit' => $totalKredit,
@@ -931,9 +894,6 @@ class AccountingService
     /**
      * Post transaksi jurnal ke neraca saldo (ledger)
      * Dipanggil otomatis saat jurnal di-post
-     * 
-     * @param Jurnal $jurnal
-     * @return void
      */
     public function postToLedger(Jurnal $jurnal): void
     {
@@ -962,11 +922,8 @@ class AccountingService
     /**
      * Recalculate balance untuk periode tertentu
      * Berguna saat ada koreksi atau perlu recalculate
-     * 
-     * @param int $desaId
-     * @param string $periode (Y-m format)
-     * @param int|null $unitUsahaId
-     * @return void
+     *
+     * @param  string  $periode  (Y-m format)
      */
     public function recalculateBalance(int $desaId, string $periode, ?int $unitUsahaId = null): void
     {
@@ -974,11 +931,11 @@ class AccountingService
             // Hapus neraca saldo existing untuk periode ini
             $query = NeracaSaldo::where('desa_id', $desaId)
                 ->where('periode', $periode);
-            
+
             if ($unitUsahaId) {
                 $query->where('unit_usaha_id', $unitUsahaId);
             }
-            
+
             $query->delete();
 
             // Ambil semua jurnal posted untuk periode ini
@@ -986,7 +943,7 @@ class AccountingService
                 ->where('status', 'posted')
                 ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
                 ->whereMonth('tanggal_transaksi', substr($periode, 5, 2));
-            
+
             if ($unitUsahaId) {
                 $jurnalQuery->where('unit_usaha_id', $unitUsahaId);
             }
@@ -1015,11 +972,6 @@ class AccountingService
     /**
      * Close periode akuntansi
      * Setelah close, periode tidak bisa diubah
-     * 
-     * @param int $desaId
-     * @param string $periode
-     * @param int|null $unitUsahaId
-     * @return void
      */
     public function closePeriod(int $desaId, string $periode, ?int $unitUsahaId = null): void
     {
@@ -1028,7 +980,7 @@ class AccountingService
             ->where('status', 'draft')
             ->whereYear('tanggal_transaksi', substr($periode, 0, 4))
             ->whereMonth('tanggal_transaksi', substr($periode, 5, 2))
-            ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
             ->exists();
 
         if ($hasDraft) {
@@ -1044,7 +996,7 @@ class AccountingService
             // Update status periode menjadi closed
             NeracaSaldo::where('desa_id', $desaId)
                 ->where('periode', $periode)
-                ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+                ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
                 ->update([
                     'status_periode' => 'closed',
                     'closed_at' => now(),
@@ -1058,24 +1010,21 @@ class AccountingService
 
     /**
      * Check apakah periode sudah closed
-     * 
-     * @param int $desaId
-     * @param string $periode Format: YYYY-MM
-     * @param int|null $unitUsahaId
-     * @return bool
+     *
+     * @param  string  $periode  Format: YYYY-MM
      */
     public function isPeriodClosed(int $desaId, string $periode, ?int $unitUsahaId = null): bool
     {
         $query = NeracaSaldo::where('desa_id', $desaId)
             ->where('periode', $periode)
             ->where('status_periode', 'closed');
-        
+
         if ($unitUsahaId !== null) {
             $query->where('unit_usaha_id', $unitUsahaId);
         } else {
             $query->whereNull('unit_usaha_id');
         }
-        
+
         // Jika ada minimal 1 record dengan status closed, berarti periode closed
         return $query->exists();
     }
@@ -1083,18 +1032,13 @@ class AccountingService
     /**
      * Reopen periode yang sudah closed
      * Hanya untuk koreksi/adjustment
-     * 
-     * @param int $desaId
-     * @param string $periode
-     * @param int|null $unitUsahaId
-     * @return void
      */
     public function reopenPeriod(int $desaId, string $periode, ?int $unitUsahaId = null): void
     {
         DB::transaction(function () use ($desaId, $periode, $unitUsahaId) {
             NeracaSaldo::where('desa_id', $desaId)
                 ->where('periode', $periode)
-                ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+                ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
                 ->update([
                     'status_periode' => 'open',
                     'closed_at' => null,
@@ -1124,28 +1068,28 @@ class AccountingService
         // Update mutasi
         if ($posisi === 'debit') {
             $neracaSaldo->mutasi_debit = bcadd(
-                (string)($neracaSaldo->mutasi_debit ?? '0'), 
-                (string)$jumlah, 
+                (string) ($neracaSaldo->mutasi_debit ?? '0'),
+                (string) $jumlah,
                 2
             );
         } else {
             $neracaSaldo->mutasi_kredit = bcadd(
-                (string)($neracaSaldo->mutasi_kredit ?? '0'), 
-                (string)$jumlah, 
+                (string) ($neracaSaldo->mutasi_kredit ?? '0'),
+                (string) $jumlah,
                 2
             );
         }
 
         // Set saldo awal dari periode sebelumnya (jika belum ada)
-        if (!$neracaSaldo->exists) {
+        if (! $neracaSaldo->exists) {
             $this->setSaldoAwal($neracaSaldo, $desaId, $akunId, $periode, $unitUsahaId);
         }
 
         // Hitung saldo akhir
         $neracaSaldo->saldo_akhir_debit = bcadd(
             bcadd(
-                (string)($neracaSaldo->saldo_awal_debit ?? '0'), 
-                (string)($neracaSaldo->mutasi_debit ?? '0'), 
+                (string) ($neracaSaldo->saldo_awal_debit ?? '0'),
+                (string) ($neracaSaldo->mutasi_debit ?? '0'),
                 2
             ),
             '0',
@@ -1153,8 +1097,8 @@ class AccountingService
         );
         $neracaSaldo->saldo_akhir_kredit = bcadd(
             bcadd(
-                (string)($neracaSaldo->saldo_awal_kredit ?? '0'), 
-                (string)($neracaSaldo->mutasi_kredit ?? '0'), 
+                (string) ($neracaSaldo->saldo_awal_kredit ?? '0'),
+                (string) ($neracaSaldo->mutasi_kredit ?? '0'),
                 2
             ),
             '0',
@@ -1184,7 +1128,7 @@ class AccountingService
         $previous = NeracaSaldo::where('desa_id', $desaId)
             ->where('akun_id', $akunId)
             ->where('periode', $previousPeriod)
-            ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
             ->first();
 
         if ($previous) {
@@ -1203,7 +1147,7 @@ class AccountingService
     {
         $neracaSaldos = NeracaSaldo::where('desa_id', $desaId)
             ->where('periode', $periode)
-            ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
             ->get();
 
         foreach ($neracaSaldos as $ns) {
@@ -1232,7 +1176,7 @@ class AccountingService
 
         $currentBalances = NeracaSaldo::where('desa_id', $desaId)
             ->where('periode', $periode)
-            ->when($unitUsahaId, fn($q) => $q->where('unit_usaha_id', $unitUsahaId))
+            ->when($unitUsahaId, fn ($q) => $q->where('unit_usaha_id', $unitUsahaId))
             ->get();
 
         foreach ($currentBalances as $balance) {
