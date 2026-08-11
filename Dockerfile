@@ -142,9 +142,11 @@ RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache/data} \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# PHP upload limits (logo max 2MB, Livewire temp)
-RUN echo "upload_max_filesize=10M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size=12M" >> /usr/local/etc/php/conf.d/uploads.ini
+# PHP upload limits: mengakomodasi unggah file backup database dari panel
+# Super Admin (maks 500MB). Ingat: reverse proxy (NPM) juga perlu
+# client_max_body_size yang sepadan - lihat docs/DEPLOYMENT.md.
+RUN echo "upload_max_filesize=512M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size=520M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Entrypoint: fix permissions, storage:link, then start Apache
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
