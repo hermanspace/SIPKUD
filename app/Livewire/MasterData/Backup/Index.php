@@ -66,7 +66,7 @@ class Index extends Component
     /**
      * Unggah file backup dari komputer (mis. hasil unduhan dari server lain).
      */
-    public function upload(DatabaseBackupService $backup): void
+    public function uploadBackup(DatabaseBackupService $backup): void
     {
         Gate::authorize('super_admin');
 

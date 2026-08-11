@@ -90,7 +90,7 @@ it('menerima unggahan file backup .dump ke daftar backup', function () {
 
     Livewire::test(Index::class)
         ->set('uploadFile', UploadedFile::fake()->create('produksi.dump', 100))
-        ->call('upload')
+        ->call('uploadBackup')
         ->assertHasNoErrors();
 
     $list = app(DatabaseBackupService::class)->list();
@@ -105,7 +105,7 @@ it('menolak unggahan file dengan format selain .dump / .sql.gz', function () {
 
     Livewire::test(Index::class)
         ->set('uploadFile', UploadedFile::fake()->create('bukan-backup.txt', 10))
-        ->call('upload');
+        ->call('uploadBackup');
 
     expect(app(DatabaseBackupService::class)->list())->toBeEmpty();
 });

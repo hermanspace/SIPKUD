@@ -45,9 +45,9 @@
                     <div class="flex items-center gap-3">
                         <input type="file" wire:model="uploadFile" accept=".dump,.gz"
                             class="text-sm text-gray-600 file:mr-3 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
-                        <flux:button wire:click="upload" wire:loading.attr="disabled" size="sm">
-                            <span wire:loading.remove wire:target="upload,uploadFile">Unggah</span>
-                            <span wire:loading wire:target="upload,uploadFile">Mengunggah...</span>
+                        <flux:button wire:click="uploadBackup" wire:loading.attr="disabled" size="sm">
+                            <span wire:loading.remove wire:target="uploadBackup,uploadFile">Unggah</span>
+                            <span wire:loading wire:target="uploadBackup,uploadFile">Mengunggah...</span>
                         </flux:button>
                     </div>
                     @error('uploadFile')
