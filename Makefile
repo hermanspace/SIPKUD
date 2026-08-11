@@ -27,9 +27,12 @@ help: ## Tampilkan daftar perintah
 # -----------------------------------------------------------------------------
 # Development
 # -----------------------------------------------------------------------------
+.PHONY: flux-auth
+flux-auth: ## Pastikan kredensial Flux Pro ada (prompt email + license key bila belum)
+	@./scripts/setup-flux-auth.sh
+
 .PHONY: setup
-setup: ## Setup dev pertama kali: env, build, up, composer, key, migrate, assets
-	@test -f .env || (cp .env.example .env && echo ".env dibuat dari .env.example")
+setup: flux-auth ## Setup dev pertama kali: env, build, up, composer, key, migrate, assets
 	$(DC_DEV) build
 	$(DC_DEV) up -d
 	$(DC_DEV) exec app composer install
@@ -54,7 +57,7 @@ restart: ## Restart stack dev
 	$(DC_DEV) restart
 
 .PHONY: rebuild
-rebuild: ## Build ulang image dev lalu nyalakan
+rebuild: flux-auth ## Build ulang image dev lalu nyalakan
 	$(DC_DEV) build
 	$(DC_DEV) up -d
 
@@ -133,7 +136,7 @@ prod-init: ## Buat network frontend/backend (sekali saja per server)
 	@echo "Network frontend & backend siap."
 
 .PHONY: prod-build
-prod-build: ## Build image production
+prod-build: flux-auth ## Build image production
 	$(DC_PROD) build
 
 .PHONY: prod-up

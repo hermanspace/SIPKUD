@@ -27,8 +27,7 @@ double entry.
 ### Dengan Docker (disarankan — tidak perlu install apa pun selain Docker + make)
 
 ```bash
-cp .env.example .env   # isi COMPOSER_AUTH untuk flux-pro
-make setup             # build, up, composer install, migrate, build aset
+make setup             # prompt kredensial Flux Pro, lalu build + up + migrate + aset
 make up / make down    # nyalakan / matikan stack
 make help              # daftar semua perintah
 ```

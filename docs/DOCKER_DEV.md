@@ -34,11 +34,17 @@ PHP, Composer, Node, PostgreSQL, maupun Redis di mesin host.
 
 ### Kredensial yang dibutuhkan saat build
 
-Paket `livewire/flux-pro` privat — set `COMPOSER_AUTH` di `.env` sebelum
-`make setup` / build image:
+Paket `livewire/flux-pro` privat — butuh email akun Flux + license key.
+**Tidak perlu diisi manual**: saat `make setup` / `make rebuild` /
+`make prod-build`, skrip `scripts/setup-flux-auth.sh` otomatis menampilkan
+prompt untuk memasukkan kredensial bila belum ada, memverifikasinya ke
+`composer.fluxui.dev`, lalu menyimpannya sebagai `COMPOSER_AUTH` di `.env`.
 
-```env
-COMPOSER_AUTH='{"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}'
+Bisa juga dijalankan manual (mis. untuk mengganti kredensial — hapus dulu
+baris `COMPOSER_AUTH` di `.env`):
+
+```bash
+./scripts/setup-flux-auth.sh
 ```
 
 ---
@@ -46,8 +52,7 @@ COMPOSER_AUTH='{"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","passwor
 ## 2. Development
 
 ```bash
-cp .env.example .env        # lalu isi COMPOSER_AUTH (flux-pro)
-make setup                  # build image, up, composer install, migrate, build aset
+make setup   # prompt kredensial Flux Pro -> build image, up, composer install, migrate, build aset
 ```
 
 Selesai — buka:
