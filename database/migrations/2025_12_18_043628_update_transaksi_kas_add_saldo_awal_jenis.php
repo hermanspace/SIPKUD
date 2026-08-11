@@ -19,6 +19,11 @@ return new class extends Migration
                 'jenis_transaksi',
                 ['masuk', 'keluar', 'saldo_awal']
             );
+        } elseif ($driver === 'sqlite') {
+            // SQLite (testing): rebuild kolom sebagai string tanpa CHECK constraint
+            Schema::table('transaksi_kas', function ($table) {
+                $table->string('jenis_transaksi')->change();
+            });
         } else {
             DB::statement("ALTER TABLE transaksi_kas MODIFY COLUMN jenis_transaksi ENUM('masuk', 'keluar', 'saldo_awal') NOT NULL");
         }
@@ -37,6 +42,8 @@ return new class extends Migration
                 'jenis_transaksi',
                 ['masuk', 'keluar']
             );
+        } elseif ($driver === 'sqlite') {
+            // SQLite (testing): tidak ada CHECK constraint yang perlu dikembalikan
         } else {
             DB::statement("ALTER TABLE transaksi_kas MODIFY COLUMN jenis_transaksi ENUM('masuk', 'keluar') NOT NULL");
         }

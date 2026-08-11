@@ -24,19 +24,33 @@ class AccountingService
 {
     /**
      * Buat jurnal baru dengan validasi double entry
-     * 
+     *
      * @param array $data
+     * @param bool $allowClosedPeriod Izinkan pembuatan jurnal pada periode closed (khusus saldo awal)
      * @return Jurnal
      * @throws ValidationException
      */
-    public function createJurnal(array $data): Jurnal
+    public function createJurnal(array $data, bool $allowClosedPeriod = false): Jurnal
     {
         // Validasi data
         $this->validateJurnalData($data);
-        
+
         // Validasi balance (debit = kredit)
         $this->validateBalance($data['details']);
-        
+
+        // Validasi periode tidak boleh closed
+        if (! $allowClosedPeriod) {
+            $periode = Carbon::parse($data['tanggal_transaksi'])->format('Y-m');
+            if ($this->isPeriodClosed($data['desa_id'], $periode, $data['unit_usaha_id'] ?? null)) {
+                throw ValidationException::withMessages([
+                    'periode' => sprintf(
+                        'Periode %s sudah dikunci. Transaksi baru tidak dapat dibuat.',
+                        Carbon::createFromFormat('Y-m', $periode)->locale('id')->isoFormat('MMMM YYYY')
+                    ),
+                ]);
+            }
+        }
+
         return DB::transaction(function () use ($data) {
             // Hitung total debit dan kredit
             $totals = $this->calculateTotals($data['details']);

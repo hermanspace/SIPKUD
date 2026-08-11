@@ -170,9 +170,9 @@ class SaldoAwal extends Component
                                     'keterangan' => 'Saldo awal kas',
                                 ],
                             ],
-                        ]);
+                        ], allowClosedPeriod: true);
                     }
-                    
+
                     $this->dispatch('success', message: 'Saldo awal berhasil diupdate');
                 } else {
                     // Buat saldo awal baru
@@ -210,8 +210,8 @@ class SaldoAwal extends Component
                                 'keterangan' => 'Saldo awal kas',
                             ],
                         ],
-                    ]);
-                    
+                    ], allowClosedPeriod: true);
+
                     $this->dispatch('success', message: 'Saldo awal berhasil disimpan dan jurnal telah dibuat.');
                     $this->saldoAwalExists = true;
                     $this->saldoAwalId = $transaksiKas->id;

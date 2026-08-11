@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasDesaScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class UnitUsaha extends Model
 {
-    use HasDesaScope, SoftDeletes;
+    use HasDesaScope, HasFactory, SoftDeletes;
 
     protected $table = 'unit_usaha';
 

@@ -87,7 +87,11 @@ class Jurnal extends Model
         $tahun = now()->format('Y');
         $bulan = now()->format('m');
         
-        $lastJurnal = static::where('desa_id', $desaId)
+        // Tanpa global scope & termasuk soft-deleted: penomoran harus konsisten
+        // untuk desa yang sama siapa pun user yang membuat jurnal
+        $lastJurnal = static::withoutGlobalScopes()
+            ->withTrashed()
+            ->where('desa_id', $desaId)
             ->whereYear('created_at', $tahun)
             ->whereMonth('created_at', $bulan)
             ->orderBy('id', 'desc')

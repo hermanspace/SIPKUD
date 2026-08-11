@@ -19,6 +19,11 @@ return new class extends Migration
                 'role',
                 ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view']
             );
+        } elseif ($driver === 'sqlite') {
+            // SQLite (testing): rebuild kolom sebagai string tanpa CHECK constraint
+            Schema::table('users', function ($table) {
+                $table->string('role')->default('admin_desa')->change();
+            });
         } else {
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
         }
@@ -37,6 +42,8 @@ return new class extends Migration
                 'role',
                 ['super_admin', 'admin_desa', 'executive_view']
             );
+        } elseif ($driver === 'sqlite') {
+            // SQLite (testing): tidak ada CHECK constraint yang perlu dikembalikan
         } else {
             DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin_desa', 'executive_view') NOT NULL DEFAULT 'admin_desa'");
         }

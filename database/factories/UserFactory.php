@@ -36,6 +36,42 @@ class UserFactory extends Factory
     }
 
     /**
+     * Role: Super Admin (PMD Kabupaten) - akses seluruh data.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'super_admin',
+            'kecamatan_id' => null,
+            'desa_id' => null,
+        ]);
+    }
+
+    /**
+     * Role: Admin Kecamatan - akses data seluruh desa di kecamatannya.
+     */
+    public function adminKecamatan(int $kecamatanId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin_kecamatan',
+            'kecamatan_id' => $kecamatanId,
+            'desa_id' => null,
+        ]);
+    }
+
+    /**
+     * Role: Admin Desa - hanya akses data desanya sendiri.
+     */
+    public function adminDesa(int $desaId, ?int $kecamatanId = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin_desa',
+            'kecamatan_id' => $kecamatanId,
+            'desa_id' => $desaId,
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
