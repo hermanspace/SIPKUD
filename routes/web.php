@@ -66,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Super Admin & Admin Kecamatan Routes - Pengguna CRUD
-    Route::middleware(['can:admin_kecamatan'])->group(function () {
+    Route::middleware(['can:admin_kecamatan', 'tenant'])->group(function () {
         Route::get('pengguna', \App\Livewire\MasterData\Pengguna\Index::class)->name('pengguna.index');
         Route::get('pengguna/create', \App\Livewire\MasterData\Pengguna\Create::class)->name('pengguna.create');
         Route::get('pengguna/{user}/edit', \App\Livewire\MasterData\Pengguna\Edit::class)->name('pengguna.edit');
@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Desa & Admin Kecamatan Routes - Master Data
     // Index routes - bisa diakses oleh admin desa dan admin kecamatan (read-only untuk admin kecamatan)
-    Route::middleware(['can:view_desa_data'])->group(function () {
+    Route::middleware(['can:view_desa_data', 'tenant'])->group(function () {
         Route::get('kelompok', \App\Livewire\MasterData\Kelompok\Index::class)->name('kelompok.index');
         Route::get('anggota', \App\Livewire\MasterData\Anggota\Index::class)->name('anggota.index');
         Route::get('akun', \App\Livewire\MasterData\Akun\Index::class)->name('akun.index');
@@ -103,13 +103,13 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Master Akun (COA) - hanya Super Admin & Admin Kecamatan
-    Route::middleware(['can:manage_akun'])->group(function () {
+    Route::middleware(['can:manage_akun', 'tenant'])->group(function () {
         Route::get('akun/create', \App\Livewire\MasterData\Akun\Create::class)->name('akun.create');
         Route::get('akun/{akun}/edit', \App\Livewire\MasterData\Akun\Edit::class)->name('akun.edit');
     });
 
     // Admin Desa Routes - Create & Edit (admin kecamatan tidak bisa)
-    Route::middleware(['can:admin_desa'])->group(function () {
+    Route::middleware(['can:admin_desa', 'tenant'])->group(function () {
         // Kelompok CRUD
         Route::get('kelompok/create', \App\Livewire\MasterData\Kelompok\Create::class)->name('kelompok.create');
         Route::get('kelompok/{kelompok}/edit', \App\Livewire\MasterData\Kelompok\Edit::class)->name('kelompok.edit');
