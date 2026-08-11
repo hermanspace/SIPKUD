@@ -24,6 +24,20 @@ double entry.
 
 ## Pengembangan lokal
 
+### Dengan Docker (disarankan — tidak perlu install apa pun selain Docker + make)
+
+```bash
+cp .env.example .env   # isi COMPOSER_AUTH untuk flux-pro
+make setup             # build, up, composer install, migrate, build aset
+make up / make down    # nyalakan / matikan stack
+make help              # daftar semua perintah
+```
+
+Aplikasi di http://localhost:8000, Mailpit di http://localhost:8025.
+Detail lengkap: [docs/DOCKER_DEV.md](docs/DOCKER_DEV.md).
+
+### Tanpa Docker (PHP 8.2+, Composer, Node, PostgreSQL di host)
+
 ```bash
 composer run setup   # install, .env, key, migrate, npm build
 composer run dev     # server + queue + log + vite
@@ -44,6 +58,7 @@ php artisan accounting:verify-integrity   # verifikasi integritas double entry
 
 Seluruh dokumen desain, analisis, dan panduan ada di folder [`docs/`](docs/):
 
+- [Menjalankan dengan Docker (dev & prod, make up/down)](docs/DOCKER_DEV.md)
 - [Deployment produksi (Docker + NPM)](docs/DEPLOYMENT.md)
 - [Backup & restore database](docs/BACKUP_RESTORE.md)
 - [Dokumentasi sistem akuntansi](docs/ACCOUNTING_SYSTEM_DOCUMENTATION.md)

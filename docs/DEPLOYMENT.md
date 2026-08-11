@@ -4,6 +4,10 @@ This document describes how to run the SIPKUD Laravel application in production 
 
 ---
 
+> **Ringkas via Makefile:** sebagian besar langkah di dokumen ini tersedia
+> sebagai target make — `make prod-init`, `make prod-build`, `make prod-up`,
+> `make prod-deploy`, `make prod-backup`. Lihat [DOCKER_DEV.md](DOCKER_DEV.md).
+
 ## Prerequisites on the VPS
 
 - Docker and Docker Compose installed
@@ -12,6 +16,12 @@ This document describes how to run the SIPKUD Laravel application in production 
   - **Redis**: container `redis-cache`, port `6379`, network `backend`
   - **Nginx Proxy Manager**: network `frontend`
 - Networks `frontend` and `backend` already created
+  (atau jalankan `make prod-init`)
+
+> **Server tanpa infra bersama?** Gunakan profil `bundled` — PostgreSQL 16
+> dan Redis 7 ikut dinyalakan dari compose yang sama:
+> `make prod-up-bundled` (atau `docker compose --profile bundled up -d`).
+> Data tersimpan di volume `sipkud-pgdata` / `sipkud-redisdata`.
 
 ---
 

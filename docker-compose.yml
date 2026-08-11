@@ -1,7 +1,17 @@
 # SIPKUD Laravel - Production Docker Compose
-# - Database & Redis: handled by server infrastructure (postgres-db, redis-cache)
-# - Networks: frontend (NPM), backend (postgres, redis)
-# - Tidak ada service database di sini; connect ke existing postgres-db
+#
+# Dua mode pemakaian (lihat Makefile: make prod-up / prod-up-bundled):
+#
+# 1. Infra bersama (default): PostgreSQL & Redis sudah ada di server sebagai
+#    container `postgres-db` dan `redis-cache` pada network `backend`.
+#      docker compose up -d
+#
+# 2. Mandiri (bundled): server kosong tanpa infra bersama - profil "bundled"
+#    menyalakan PostgreSQL & Redis dari compose ini juga.
+#      docker compose --profile bundled up -d
+#
+# Network frontend/backend bersifat external; buat sekali dengan:
+#      make prod-init   (atau: docker network create frontend && docker network create backend)
 
 services:
   app:
@@ -86,8 +96,49 @@ services:
     depends_on:
       - app
 
+  # ---------------------------------------------------------------------
+  # Profil "bundled": PostgreSQL & Redis untuk deployment mandiri
+  # (server tanpa infra bersama). Nama container sengaja disamakan dengan
+  # infra bersama (postgres-db / redis-cache) agar DB_HOST/REDIS_HOST sama.
+  # ---------------------------------------------------------------------
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: postgres-db
+    profiles: ["bundled"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:?set DB_DATABASE di .env}
+      POSTGRES_USER: ${DB_USERNAME:?set DB_USERNAME di .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD di .env}
+    volumes:
+      - sipkud-pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: redis-cache
+    profiles: ["bundled"]
+    restart: unless-stopped
+    volumes:
+      - sipkud-redisdata:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   sipkud-storage:
+  sipkud-pgdata:
+  sipkud-redisdata:
 
 # COMPOSER_AUTH di .env untuk build (Flux Pro)
 # Format: COMPOSER_AUTH='{"http-basic":{"composer.fluxui.dev":{"username":"EMAIL","password":"TOKEN"}}}'
