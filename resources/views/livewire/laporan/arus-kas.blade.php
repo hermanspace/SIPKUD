@@ -38,6 +38,7 @@
         @if($error)
             <div class="p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg">{{ $error }}</div>
         @elseif($data)
+            <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <tbody>
                     @foreach([
@@ -81,6 +82,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         @endif
     </flux:card>
 </div>

@@ -1,8 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 42" {{ $attributes }}>
-    <path 
-        fill="currentColor" 
-        fill-rule="evenodd" 
-        clip-rule="evenodd"
-        d="M17.2 5.633 8.6.855 0 5.633v26.51l16.2 9 16.2-9v-8.442l7.6-4.223V9.856l-8.6-4.777-8.6 4.777V18.3l-5.6 3.111V5.633ZM38 18.301l-5.6 3.11v-6.157l5.6-3.11V18.3Zm-1.06-7.856-5.54 3.078-5.54-3.079 5.54-3.078 5.54 3.079ZM24.8 18.3v-6.157l5.6 3.111v6.158L24.8 18.3Zm-1 1.732 5.54 3.078-13.14 7.302-5.54-3.078 13.14-7.3v-.002Zm-16.2 7.89 7.6 4.222V38.3L2 30.966V7.92l5.6 3.111v16.892ZM8.6 9.3 3.06 6.222 8.6 3.143l5.54 3.08L8.6 9.3Zm21.8 15.51-13.2 7.334V38.3l13.2-7.334v-6.156ZM9.6 11.034l5.6-3.11v14.6l-5.6 3.11v-14.6Z"
-    />
+{{-- Logo default SIPKUD: atap balai desa memayungi koin Rupiah --}}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" {{ $attributes }}>
+    {{-- Atap rumah / balai desa --}}
+    <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"
+        d="M20 2 2 14.5v3.2L20 5.9l18 11.8v-3.2L20 2Z" />
+    {{-- Dinding kiri & kanan --}}
+    <path fill="currentColor"
+        d="M5 19.5h3.4V36H5V19.5Zm26.6 0H35V36h-3.4V19.5Z" />
+    {{-- Koin Rupiah di tengah --}}
+    <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"
+        d="M20 15.2a9.4 9.4 0 1 0 0 18.8 9.4 9.4 0 0 0 0-18.8Zm0 2.8a6.6 6.6 0 1 1 0 13.2 6.6 6.6 0 0 1 0-13.2Z" />
+    {{-- Huruf R (Rp) di dalam koin --}}
+    <path fill="currentColor"
+        d="M17.6 20.9h3.1c1.6 0 2.8 1 2.8 2.5 0 1.1-.6 1.9-1.6 2.3l1.9 3h-2.2l-1.6-2.7h-.5v2.7h-1.9v-7.8Zm1.9 1.6v1.9h1c.6 0 1-.4 1-1 0-.5-.4-.9-1-.9h-1Z" />
+    {{-- Alas / lantai --}}
+    <path fill="currentColor" d="M3 36.6h34V39H3v-2.4Z" />
 </svg>

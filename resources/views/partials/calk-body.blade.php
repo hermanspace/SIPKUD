@@ -27,6 +27,7 @@
 
     <section>
         <h3 class="font-semibold text-base mb-2">3. Rincian Saldo Akun Material (per Desember {{ $tahun }})</h3>
+        <div class="overflow-x-auto">
         <table class="min-w-full border text-xs">
             <thead class="bg-zinc-50">
                 <tr>
@@ -47,6 +48,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </section>
 
     <section>
@@ -56,6 +58,7 @@
             Rp {{ number_format($kolektibilitas['total_sisa'], 2, ',', '.') }}.
             Rasio pinjaman bermasalah (NPL): {{ number_format($kolektibilitas['npl_persen'], 2, ',', '.') }}%.
         </p>
+        <div class="overflow-x-auto">
         <table class="min-w-full border text-xs">
             <thead class="bg-zinc-50">
                 <tr>
@@ -78,6 +81,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </section>
 
     <section>

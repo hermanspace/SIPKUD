@@ -49,6 +49,7 @@
         @if($labaRugi['laba_bersih'] > 0)
             <div class="mb-6">
                 <flux:heading size="sm" class="mb-2">Simulasi Alokasi SHU (sesuai konfigurasi AD/ART)</flux:heading>
+                <div class="overflow-x-auto">
                 <table class="min-w-full text-sm border rounded">
                     <thead class="bg-zinc-50">
                         <tr>
@@ -67,6 +68,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
                 <p class="mt-2 text-xs text-zinc-500">
                     Persentase alokasi dikonfigurasi di <code>config/accounting.php</code> (alokasi_shu).
                     Pembagian aktual dilakukan sesuai keputusan Musyawarah Desa.

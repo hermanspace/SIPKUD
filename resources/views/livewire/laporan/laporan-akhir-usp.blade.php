@@ -157,7 +157,7 @@
                 <!-- Detail Pendapatan -->
                 <div class="mb-8">
                     <h3 class="text-lg font-semibold mb-4">Detail Pendapatan</h3>
-                    <div class="overflow-hidden border border-gray-200 rounded-lg">
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
