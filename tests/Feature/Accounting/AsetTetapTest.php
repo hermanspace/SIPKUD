@@ -91,3 +91,11 @@ it('menjalankan command aset:penyusutan untuk semua desa', function () {
     expect(asetUji($this->desa)->fresh()->periode_penyusutan_terakhir)->toBeNull(); // aset baru belum diproses
     expect(AsetTetap::withoutGlobalScopes()->whereNotNull('periode_penyusutan_terakhir')->count())->toBe(1);
 });
+
+it('menampilkan flowchart alur akuntansi di halaman user manual', function () {
+    $this->get(route('user-manual.index'))
+        ->assertOk()
+        ->assertSee('Alur Proses Akuntansi SIPKUD')
+        ->assertSee('Admin Kecamatan')
+        ->assertSee('Perjalanan satu transaksi');
+});

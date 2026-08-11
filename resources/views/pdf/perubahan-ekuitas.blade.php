@@ -13,9 +13,7 @@
     </style>
 </head>
 <body>
-    <h2>LAPORAN PERUBAHAN EKUITAS</h2>
-    <h3>{{ $desa->nama_desa ?? '' }}{{ $unitUsaha ? ' - '.$unitUsaha->nama_unit : '' }}</h3>
-    <h3>Periode: {{ $periode }}</h3>
+    @include('pdf.partials.kop', ['judul' => 'Laporan Perubahan Ekuitas', 'periode' => 'Periode: '.$periode, 'desa' => $desa, 'unitUsaha' => $unitUsaha])
 
     <table>
         <tr><td>Modal Awal</td><td class="right">{{ number_format($data['modal_awal'], 2, ',', '.') }}</td></tr>
@@ -26,5 +24,6 @@
         <tr><td>Prive / Pengambilan</td><td class="right">{{ number_format($data['prive'], 2, ',', '.') }}</td></tr>
         <tr class="head total"><td>MODAL AKHIR</td><td class="right">{{ number_format($data['modal_akhir'], 2, ',', '.') }}</td></tr>
     </table>
+    @include('pdf.partials.ttd')
 </body>
 </html>

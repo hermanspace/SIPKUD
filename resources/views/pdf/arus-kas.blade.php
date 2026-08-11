@@ -13,9 +13,7 @@
     </style>
 </head>
 <body>
-    <h2>LAPORAN ARUS KAS</h2>
-    <h3>{{ $desa->nama_desa ?? '' }}{{ $unitUsaha ? ' - '.$unitUsaha->nama_unit : '' }}</h3>
-    <h3>Periode: {{ $periode }}</h3>
+    @include('pdf.partials.kop', ['judul' => 'Laporan Arus Kas', 'periode' => 'Periode: '.$periode, 'desa' => $desa, 'unitUsaha' => $unitUsaha])
 
     <table>
         @foreach([
@@ -36,5 +34,6 @@
         <tr><td>Saldo kas awal periode</td><td class="right">{{ number_format($data['saldo_awal_kas'], 2, ',', '.') }}</td></tr>
         <tr class="head"><td>SALDO KAS AKHIR PERIODE</td><td class="right">{{ number_format($data['saldo_akhir_kas'], 2, ',', '.') }}</td></tr>
     </table>
+    @include('pdf.partials.ttd')
 </body>
 </html>

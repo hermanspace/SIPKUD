@@ -410,4 +410,8 @@
         <p>© {{ date('Y') }} SIPKUD - Sistem Informasi Pengelolaan Keuangan Desa</p>
         <p class="mt-2 text-sm">Untuk pertanyaan lebih lanjut, hubungi administrator sistem.</p>
     </div>
+
+    {{-- Flowchart alur proses akuntansi (semua level akses) --}}
+    @include('partials.alur-akuntansi')
+
 </div>

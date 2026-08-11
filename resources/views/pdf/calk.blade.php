@@ -14,8 +14,7 @@
     </style>
 </head>
 <body>
-    <h2>CATATAN ATAS LAPORAN KEUANGAN</h2>
-    <h3 class="center">{{ $desa->nama_desa ?? '' }} - Tahun Buku {{ $tahun }}</h3>
+    @include('pdf.partials.kop', ['judul' => 'Catatan atas Laporan Keuangan', 'periode' => 'Tahun Buku '.$tahun, 'desa' => $desa])
 
     <h3>1. Umum</h3>
     <p>Laporan keuangan ini disusun untuk unit usaha simpan pinjam (USP) {{ $desa->nama_desa ?? '' }},
@@ -68,5 +67,6 @@
     <p>Total pendapatan kumulatif Rp {{ number_format($labaRugi['pendapatan'], 2, ',', '.') }};
     total beban kumulatif Rp {{ number_format($labaRugi['beban'], 2, ',', '.') }};
     laba (rugi) bersih <strong>Rp {{ number_format($labaRugi['laba_bersih'], 2, ',', '.') }}</strong>.</p>
+    @include('pdf.partials.ttd')
 </body>
 </html>

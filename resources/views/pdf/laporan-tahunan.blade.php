@@ -140,5 +140,6 @@
             @endforeach
         </tbody>
     </table>
+    @include('pdf.partials.ttd')
 </body>
 </html>
