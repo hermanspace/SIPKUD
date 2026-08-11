@@ -65,7 +65,11 @@ return [
 
     'temporary_file_upload' => [
         'disk' => 'local',
-        'rules' => ['nullable', 'file', 'image', 'max:2048'],
+        // Aturan GLOBAL untuk semua upload Livewire - jangan batasi ke 'image'
+        // di sini karena panel backup mengunggah file .dump/.sql.gz.
+        // Validasi spesifik (mis. logo wajib image max:2048) dilakukan
+        // per-komponen: lihat MasterData/Pengaturan/Edit dan Backup/Index.
+        'rules' => ['required', 'file', 'max:524288'], // maks 512MB
         'directory' => 'livewire-tmp',
         'middleware' => [],
         'max_upload_time' => 30,

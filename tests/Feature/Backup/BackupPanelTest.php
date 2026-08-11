@@ -84,6 +84,31 @@ it('memangkas backup lama sesuai retensi', function () {
         ->and($service->list()[0]['filename'])->toBe('sipkud-scheduled-20260105-000000.dump');
 });
 
+it('menerima unggahan file backup .dump ke daftar backup', function () {
+    $this->actingAs(User::factory()->superAdmin()->create());
+
+    Livewire::test(Index::class)
+        ->set('uploadFile', \Illuminate\Http\UploadedFile::fake()->create('produksi.dump', 100))
+        ->call('upload')
+        ->assertHasNoErrors();
+
+    $list = app(DatabaseBackupService::class)->list();
+
+    expect($list)->toHaveCount(1)
+        ->and($list[0]['filename'])->toStartWith('upload-')
+        ->and($list[0]['filename'])->toEndWith('.dump');
+});
+
+it('menolak unggahan file dengan format selain .dump / .sql.gz', function () {
+    $this->actingAs(User::factory()->superAdmin()->create());
+
+    Livewire::test(Index::class)
+        ->set('uploadFile', \Illuminate\Http\UploadedFile::fake()->create('bukan-backup.txt', 10))
+        ->call('upload');
+
+    expect(app(DatabaseBackupService::class)->list())->toBeEmpty();
+});
+
 it('menolak restore tanpa konfirmasi teks RESTORE', function () {
     $this->actingAs(User::factory()->superAdmin()->create());
 
