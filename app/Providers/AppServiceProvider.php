@@ -29,27 +29,34 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Define gates for role-based access
+        // Define gates for role-based access.
+        // super_admin = urusan TEKNIS saja: Pengaturan Sistem & Backup/Restore.
         Gate::define('super_admin', function ($user) {
             return $user->isSuperAdmin();
         });
 
+        // Kelola wilayah, pengumuman, dan urusan fungsional tingkat kabupaten:
+        // Super Admin + Admin Kabupaten (Dinas PMD).
+        Gate::define('kelola_kabupaten', function ($user) {
+            return $user->hasKabupatenScope();
+        });
+
         Gate::define('admin_kecamatan', function ($user) {
-            return $user->isAdminKecamatan() || $user->isSuperAdmin();
+            return $user->isAdminKecamatan() || $user->hasKabupatenScope();
         });
 
         Gate::define('admin_desa', function ($user) {
             return $user->isAdminDesa();
         });
 
-        // Gate untuk manage master akun (COA) - hanya Admin & Super Admin
+        // Gate untuk manage master akun (COA)
         Gate::define('manage_akun', function ($user) {
-            return $user->isSuperAdmin() || $user->isAdminKecamatan();
+            return $user->hasKabupatenScope() || $user->isAdminKecamatan();
         });
 
         // Gate untuk read-only access - admin kecamatan bisa melihat data di kecamatannya
         Gate::define('view_desa_data', function ($user) {
-            return $user->isAdminDesa() || $user->isAdminKecamatan() || $user->isSuperAdmin();
+            return $user->isAdminDesa() || $user->isAdminKecamatan() || $user->hasKabupatenScope();
         });
 
         // Share pengaturan globally to all views

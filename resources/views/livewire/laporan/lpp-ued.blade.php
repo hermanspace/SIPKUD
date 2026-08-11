@@ -45,9 +45,9 @@
             </div>
             
             <!-- Filter Wilayah (Super Admin & Admin Kecamatan) -->
-            @if($user->isSuperAdmin() || $user->isAdminKecamatan())
+            @if($user->hasKabupatenScope() || $user->isAdminKecamatan())
                 <div class="flex flex-1 flex-col gap-4 sm:flex-row">
-                    @if($user->isSuperAdmin())
+                    @if($user->hasKabupatenScope())
                         <flux:select wire:model.live="kecamatan_id" class="w-full sm:w-48">
                             <option value="">Semua Kecamatan</option>
                             @foreach($kecamatanList as $kec)

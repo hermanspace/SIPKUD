@@ -39,11 +39,8 @@ class Index extends Component
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
 
-        if ($user->isSuperAdmin()) {
-            Gate::authorize('super_admin');
-        } else {
-            Gate::authorize('admin_kecamatan');
-        }
+        // Gate admin_kecamatan mencakup Super Admin, Admin Kabupaten, dan Admin Kecamatan
+        Gate::authorize('admin_kecamatan');
     }
 
     public function updatingSearch(): void
@@ -74,6 +71,14 @@ class Index extends Component
         // Prevent deleting yourself
         if ($user->id === Auth::id()) {
             $this->dispatch('error', message: 'Tidak dapat menghapus akun Anda sendiri.');
+
+            return;
+        }
+
+        // Pemanggil harus berwenang atas akun target (Admin Kabupaten tidak
+        // boleh menyentuh Super Admin; Admin Kecamatan hanya admin desa binaannya)
+        if (! Auth::user()->canManageUser($user)) {
+            $this->dispatch('error', message: 'Anda tidak berwenang menghapus pengguna ini.');
 
             return;
         }
@@ -114,7 +119,12 @@ class Index extends Component
                 $query->where('desa_id', $this->desaFilter);
             }
         } else {
-            // Filter untuk Super Admin
+            // Admin Kabupaten tidak melihat akun Super Admin sama sekali
+            if ($user->isAdminKabupaten()) {
+                $query->where('role', '!=', 'super_admin');
+            }
+
+            // Filter untuk Super Admin / Admin Kabupaten
             $query->when($this->roleFilter, function ($query) {
                 $query->where('role', $this->roleFilter);
             })

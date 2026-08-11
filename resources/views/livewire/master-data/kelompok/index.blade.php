@@ -62,7 +62,7 @@
                     placeholder="Cari nama kelompok atau keterangan..."
                     class="w-full sm:w-64"
                 />
-                @if(auth()->user()->isSuperAdmin())
+                @if(auth()->user()->hasKabupatenScope())
                     <flux:select wire:model.live="kecamatanFilter" class="w-full sm:w-48">
                         <option value="">Semua Kecamatan</option>
                         @foreach($kecamatan as $kec)
@@ -109,7 +109,7 @@
                         <th class="px-4 py-3 text-left text-sm font-semibold">No</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold">Nama Kelompok</th>
                         <th class="px-4 py-3 text-left text-sm font-semibold">Keterangan</th>
-                        @if(auth()->user()->isSuperAdmin())
+                        @if(auth()->user()->hasKabupatenScope())
                             <th class="px-4 py-3 text-left text-sm font-semibold">Kecamatan</th>
                             <th class="px-4 py-3 text-left text-sm font-semibold">Desa</th>
                         @endif
@@ -130,7 +130,7 @@
                                     {{ $item->keterangan ?? '-' }}
                                 </div>
                             </td>
-                            @if(auth()->user()->isSuperAdmin())
+                            @if(auth()->user()->hasKabupatenScope())
                                 <td class="px-4 py-3 text-sm">
                                     {{ $item->desa->kecamatan->nama_kecamatan ?? '-' }}
                                 </td>
@@ -174,7 +174,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->isSuperAdmin() ? '8' : '6' }}" class="px-4 py-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
+                            <td colspan="{{ auth()->user()->hasKabupatenScope() ? '8' : '6' }}" class="px-4 py-8 text-center text-sm text-zinc-600 dark:text-zinc-400">
                                 Tidak ada data kelompok ditemukan.
                             </td>
                         </tr>

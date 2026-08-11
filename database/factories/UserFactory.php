@@ -49,6 +49,19 @@ class UserFactory extends Factory
     }
 
     /**
+     * Role: Admin Kabupaten (Dinas PMD) - kelola seluruh desa dan fitur
+     * fungsional, tanpa pengaturan sistem & backup database.
+     */
+    public function adminKabupaten(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin_kabupaten',
+            'kecamatan_id' => null,
+            'desa_id' => null,
+        ]);
+    }
+
+    /**
      * Role: Admin Kecamatan - akses data seluruh desa di kecamatannya.
      */
     public function adminKecamatan(int $kecamatanId): static

@@ -18,7 +18,7 @@
                 </flux:navlist.group>
             </flux:navlist>
 
-            @if(auth()->user()->isSuperAdmin())
+            @if(auth()->user()->hasKabupatenScope())
                 <flux:navlist variant="outline">
                     <flux:navlist.group :heading="__('Master Data')" class="grid">
                         <flux:navlist.item icon="map" :href="route('kecamatan.index')" :current="request()->routeIs('kecamatan.*')" wire:navigate>{{ __('Kecamatan') }}</flux:navlist.item>
@@ -72,8 +72,11 @@
                     <flux:navlist.group :heading="__('Pengaturan')" class="grid">
                         <flux:navlist.item icon="users" :href="route('pengguna.index')" :current="request()->routeIs('pengguna.*')" wire:navigate>{{ __('Pengguna') }}</flux:navlist.item>
                         <flux:navlist.item icon="megaphone" :href="route('pengumuman.index')" :current="request()->routeIs('pengumuman.*')" wire:navigate>{{ __('Pengumuman') }}</flux:navlist.item>
-                        <flux:navlist.item icon="cog-6-tooth" :href="route('pengaturan.index')" :current="request()->routeIs('pengaturan.*')" wire:navigate>{{ __('Pengaturan Sistem') }}</flux:navlist.item>
-                        <flux:navlist.item icon="circle-stack" :href="route('backup.index')" :current="request()->routeIs('backup.*')" wire:navigate>{{ __('Backup Database') }}</flux:navlist.item>
+                        {{-- Khusus Super Admin (teknis): tidak tampil untuk Admin Kabupaten --}}
+                        @can('super_admin')
+                            <flux:navlist.item icon="cog-6-tooth" :href="route('pengaturan.index')" :current="request()->routeIs('pengaturan.*')" wire:navigate>{{ __('Pengaturan Sistem') }}</flux:navlist.item>
+                            <flux:navlist.item icon="circle-stack" :href="route('backup.index')" :current="request()->routeIs('backup.*')" wire:navigate>{{ __('Backup Database') }}</flux:navlist.item>
+                        @endcan
                     </flux:navlist.group>
                 </flux:navlist>
             @elseif(auth()->user()->isAdminKecamatan())

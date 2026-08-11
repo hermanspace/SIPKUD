@@ -244,7 +244,7 @@ class Index extends Component
         $kecamatan = collect();
         $desa = collect();
 
-        if ($user && $user->isSuperAdmin()) {
+        if ($user && $user->hasKabupatenScope()) {
             $kecamatan = Kecamatan::aktif()->orderBy('nama_kecamatan')->get();
             if ($this->kecamatanFilter) {
                 $desa = Desa::where('kecamatan_id', $this->kecamatanFilter)

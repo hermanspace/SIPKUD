@@ -24,7 +24,7 @@ class Index extends Component
 
     public function mount(): void
     {
-        Gate::authorize('super_admin');
+        Gate::authorize('kelola_kabupaten');
     }
 
     public function updatingSearch(): void

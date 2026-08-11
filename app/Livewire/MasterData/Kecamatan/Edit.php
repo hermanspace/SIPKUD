@@ -20,7 +20,7 @@ class Edit extends Component
 
     public function mount(Kecamatan $kecamatan): void
     {
-        Gate::authorize('super_admin');
+        Gate::authorize('kelola_kabupaten');
 
         $this->kecamatan = $kecamatan;
         $this->nama_kecamatan = $kecamatan->nama_kecamatan;

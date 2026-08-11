@@ -35,8 +35,8 @@ class TenantMiddleware
 
         $user = auth()->user();
 
-        // Super Admin dapat mengakses semua data
-        if ($user->isSuperAdmin()) {
+        // Super Admin & Admin Kabupaten dapat mengakses semua data
+        if ($user->hasKabupatenScope()) {
             return $next($request);
         }
 

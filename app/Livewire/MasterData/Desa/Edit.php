@@ -23,7 +23,7 @@ class Edit extends Component
 
     public function mount(Desa $desa): void
     {
-        Gate::authorize('super_admin');
+        Gate::authorize('kelola_kabupaten');
 
         $this->desa = $desa;
         $this->nama_desa = $desa->nama_desa;

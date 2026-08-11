@@ -278,7 +278,7 @@ class BukuKas extends Component
         $kecamatanList = [];
         $desaList = [];
 
-        if ($user->isSuperAdmin()) {
+        if ($user->hasKabupatenScope()) {
             $kecamatanList = Kecamatan::orderBy('nama_kecamatan')->get();
         } elseif ($user->isAdminKecamatan()) {
             $kecamatanList = Kecamatan::where('id', $user->kecamatan_id)->get();

@@ -223,7 +223,7 @@
             </table>
         </div>
 
-        @if($transaksi->hasPages())
+        @if($transaksi instanceof \Illuminate\Contracts\Pagination\Paginator && $transaksi->hasPages())
             <div class="mt-4">
                 {{ $transaksi->links() }}
             </div>

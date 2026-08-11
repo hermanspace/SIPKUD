@@ -117,7 +117,7 @@
                 <th width="10%">NIK</th>
                 <th width="15%">Nama</th>
                 <th width="10%">Kelompok</th>
-                @if($user->isSuperAdmin())
+                @if($user->hasKabupatenScope())
                     <th width="10%">Kecamatan</th>
                     <th width="10%">Desa</th>
                 @endif
@@ -136,7 +136,7 @@
                     <td>{{ $item->nik ?? '-' }}</td>
                     <td>{{ $item->nama }}</td>
                     <td>{{ $item->kelompok->nama_kelompok ?? '-' }}</td>
-                    @if($user->isSuperAdmin())
+                    @if($user->hasKabupatenScope())
                         <td>{{ $item->desa->kecamatan->nama_kecamatan ?? '-' }}</td>
                         <td>{{ $item->desa->nama_desa ?? '-' }}</td>
                     @endif
@@ -152,7 +152,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $user->isSuperAdmin() ? '11' : '9' }}" class="text-center">
+                    <td colspan="{{ $user->hasKabupatenScope() ? '11' : '9' }}" class="text-center">
                         Tidak ada data anggota ditemukan.
                     </td>
                 </tr>

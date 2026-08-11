@@ -49,11 +49,13 @@
                     <option value="admin_desa">Admin Desa</option>
                 </flux:select>
             @else
+                @php
+                    $roleLabels = \App\Models\User::ROLE_LABELS;
+                @endphp
                 <flux:select wire:model.live="role" label="Role" required>
-                    <option value="super_admin">Super Admin</option>
-                    <option value="admin_kecamatan">Admin Kecamatan</option>
-                    <option value="admin_desa">Admin Desa</option>
-                    <option value="executive_view">Executive View</option>
+                    @foreach(auth()->user()->manageableRoles() as $r)
+                        <option value="{{ $r }}">{{ $roleLabels[$r] ?? $r }}</option>
+                    @endforeach
                 </flux:select>
             @endif
             <flux:error name="role" />
@@ -63,7 +65,7 @@
                 </flux:text>
             @endif
 
-            @if($role !== 'super_admin')
+            @if(!in_array($role, ['super_admin', 'admin_kabupaten']))
                 @if($isAdminKecamatan)
                     <flux:select wire:model.live="kecamatan_id" label="Kecamatan" required disabled>
                         <option value="">Pilih Kecamatan</option>

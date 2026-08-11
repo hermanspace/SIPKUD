@@ -124,7 +124,7 @@
                 <th width="13%">No. Pinjaman</th>
                 <th width="8%" class="text-center">Tanggal</th>
                 <th width="18%">Nama Anggota</th>
-                @if($user->isSuperAdmin())
+                @if($user->hasKabupatenScope())
                     <th width="15%">Desa</th>
                 @endif
                 <th width="13%" class="text-right">Jumlah Pinjaman</th>
@@ -161,7 +161,7 @@
                     <td>{{ $item->nomor_pinjaman }}</td>
                     <td class="text-center">{{ $item->tanggal_pinjaman->format('d/m/Y') }}</td>
                     <td>{{ $item->anggota->nama ?? '-' }}</td>
-                    @if($user->isSuperAdmin())
+                    @if($user->hasKabupatenScope())
                         <td>{{ $item->desa->nama_desa ?? '-' }}</td>
                     @endif
                     <td class="text-right">{{ number_format($item->jumlah_pinjaman, 0, ',', '.') }}</td>
@@ -173,7 +173,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $user->isSuperAdmin() ? '9' : '8' }}" class="text-center">
+                    <td colspan="{{ $user->hasKabupatenScope() ? '9' : '8' }}" class="text-center">
                         Tidak ada data pinjaman ditemukan.
                     </td>
                 </tr>
@@ -181,7 +181,7 @@
             
             @if($pinjaman->count() > 0)
                 <tr class="total-row">
-                    <td colspan="{{ $user->isSuperAdmin() ? '5' : '4' }}" class="text-right">TOTAL:</td>
+                    <td colspan="{{ $user->hasKabupatenScope() ? '5' : '4' }}" class="text-right">TOTAL:</td>
                     <td class="text-right">{{ number_format($totalJumlahPinjaman, 0, ',', '.') }}</td>
                     <td colspan="3"></td>
                 </tr>

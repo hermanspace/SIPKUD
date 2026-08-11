@@ -54,9 +54,9 @@
                 </div>
 
                 <!-- Filter Wilayah (Super Admin & Admin Kecamatan) -->
-                @if($user->isSuperAdmin() || $user->isAdminKecamatan())
+                @if($user->hasKabupatenScope() || $user->isAdminKecamatan())
                     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @if($user->isSuperAdmin())
+                        @if($user->hasKabupatenScope())
                             <div>
                                 <label for="kecamatan_id" class="block text-sm font-medium text-gray-700 mb-2">Kecamatan</label>
                                 <select wire:model.live="kecamatan_id" id="kecamatan_id" 

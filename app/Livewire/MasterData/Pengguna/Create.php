@@ -30,12 +30,8 @@ class Create extends Component
 
     public function mount(): void
     {
-        // Super Admin dan Admin Kecamatan dapat membuat pengguna
-        if (Auth::user()->isSuperAdmin()) {
-            Gate::authorize('super_admin');
-        } else {
-            Gate::authorize('admin_kecamatan');
-        }
+        // Gate admin_kecamatan mencakup Super Admin, Admin Kabupaten, dan Admin Kecamatan
+        Gate::authorize('admin_kecamatan');
 
         // Jika user adalah Admin Kecamatan, set default kecamatan_id dan role
         if (Auth::user()->isAdminKecamatan()) {
@@ -46,8 +42,8 @@ class Create extends Component
 
     public function updatedRole(): void
     {
-        // Reset kecamatan and desa when role changes
-        if ($this->role === 'super_admin') {
+        // Role tingkat kabupaten tidak memiliki penempatan kecamatan/desa
+        if (in_array($this->role, ['super_admin', 'admin_kabupaten'])) {
             $this->kecamatan_id = null;
             $this->desa_id = null;
         } elseif ($this->role === 'admin_kecamatan') {
@@ -55,10 +51,10 @@ class Create extends Component
             $this->desa_id = null;
         }
 
-        // Jika user adalah Admin Kecamatan, mereka hanya bisa membuat admin_desa
-        if (Auth::user()->isAdminKecamatan() && $this->role !== 'admin_desa') {
+        // Tolak role di luar kewenangan pembuat (server-side, bukan cuma UI)
+        if (! in_array($this->role, Auth::user()->manageableRoles())) {
             $this->role = 'admin_desa';
-            $this->dispatch('error', message: 'Anda hanya dapat membuat Admin Desa.');
+            $this->dispatch('error', message: 'Anda tidak berwenang membuat pengguna dengan role tersebut.');
         }
     }
 
@@ -72,12 +68,8 @@ class Create extends Component
     {
         $user = Auth::user();
 
-        // Validasi role berdasarkan user yang membuat
-        $allowedRoles = ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view'];
-        if ($user->isAdminKecamatan()) {
-            // Admin Kecamatan hanya bisa membuat Admin Desa
-            $allowedRoles = ['admin_desa'];
-        }
+        // Validasi role berdasarkan kewenangan user yang membuat
+        $allowedRoles = $user->manageableRoles();
 
         $validated = $this->validate([
             'nama' => ['required', 'string', 'max:255'],
@@ -94,7 +86,7 @@ class Create extends Component
                 'required_if:role,admin_desa,executive_view',
                 'exists:desa,id',
                 function ($attribute, $value, $fail) {
-                    if (! in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
+                    if (! in_array($this->role, ['super_admin', 'admin_kabupaten', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
                         $desa = Desa::find($value);
                         if ($desa && $desa->kecamatan_id !== $this->kecamatan_id) {
                             $fail('Desa harus berada di kecamatan yang dipilih.');
@@ -136,8 +128,8 @@ class Create extends Component
         unset($validated['password_confirmation']);
         $validated['password'] = Hash::make($validated['password']);
 
-        // Set kecamatan_id and desa_id to null for super_admin
-        if ($validated['role'] === 'super_admin') {
+        // Role tingkat kabupaten tidak memiliki penempatan kecamatan/desa
+        if (in_array($validated['role'], ['super_admin', 'admin_kabupaten'])) {
             $validated['kecamatan_id'] = null;
             $validated['desa_id'] = null;
         }

@@ -12,7 +12,7 @@ class PengumumanPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasKabupatenScope();
     }
 
     /**
@@ -20,7 +20,7 @@ class PengumumanPolicy
      */
     public function view(User $user, Pengumuman $pengumuman): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasKabupatenScope();
     }
 
     /**
@@ -28,7 +28,7 @@ class PengumumanPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasKabupatenScope();
     }
 
     /**
@@ -36,7 +36,7 @@ class PengumumanPolicy
      */
     public function update(User $user, Pengumuman $pengumuman): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasKabupatenScope();
     }
 
     /**
@@ -44,6 +44,6 @@ class PengumumanPolicy
      */
     public function delete(User $user, Pengumuman $pengumuman): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasKabupatenScope();
     }
 }

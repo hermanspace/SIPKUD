@@ -35,7 +35,7 @@ trait HasDesaScope
             $user = Auth::user();
 
             // Super Admin dapat mengakses semua data
-            if ($user && method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+            if ($user && method_exists($user, 'hasKabupatenScope') && $user->hasKabupatenScope()) {
                 return;
             }
 

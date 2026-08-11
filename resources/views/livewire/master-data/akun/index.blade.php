@@ -76,7 +76,7 @@
                     <option value="nonaktif">Nonaktif</option>
                 </flux:select>
             </div>
-            @if(auth()->user()->isAdminKecamatan() || auth()->user()->isSuperAdmin())
+            @if(auth()->user()->can('manage_akun'))
                 <flux:button 
                     wire:navigate 
                     href="{{ route('akun.create') }}" 
@@ -118,7 +118,7 @@
                                 </flux:badge>
                             </td>
                             <td class="px-4 py-3 text-right">
-                                @if(auth()->user()->isAdminKecamatan() || auth()->user()->isSuperAdmin())
+                                @if(auth()->user()->can('manage_akun'))
                                     <div class="flex items-center justify-end gap-2">
                                         <flux:button 
                                             wire:navigate

@@ -121,7 +121,7 @@ class Index extends Component
             ->orderBy('nama');
 
         $desa = collect();
-        if ($user && $user->isSuperAdmin()) {
+        if ($user && $user->hasKabupatenScope()) {
             $desa = Desa::aktif()->orderBy('nama_desa')->get();
         } elseif ($user && $user->isAdminKecamatan()) {
             $desa = Desa::where('kecamatan_id', $user->kecamatan_id)->aktif()->orderBy('nama_desa')->get();

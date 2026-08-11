@@ -276,5 +276,11 @@ repo GitHub + kredensial Flux Pro.
       di percakapan kerja) — prosedur di §4.
 - [ ] Tinjau peringatan Dependabot (https://github.com/hermanspace/SIPKUD/security/dependabot):
       `composer update` + `npm audit fix` + jalankan test suite.
+- [ ] **Setelah deploy rilis role Admin Kabupaten**: turunkan akun staf Dinas
+      PMD yang selama ini memakai Super Admin ke role `admin_kabupaten`
+      lewat halaman Pengguna (Super Admin = teknis: pengaturan + backup;
+      Admin Kabupaten = fungsional harian). Migrasi
+      `add_admin_kabupaten_role` ikut menormalkan kolom role ENUM warisan
+      pgloader menjadi varchar + CHECK constraint.
 - [ ] (Opsional) Cloudflare SSL mode *Full (strict)* + Origin Certificate di
       NPM untuk jalur CF→NPM yang lebih ketat.

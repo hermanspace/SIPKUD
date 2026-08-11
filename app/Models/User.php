@@ -103,11 +103,40 @@ class User extends Authenticatable
     }
 
     /**
+     * Label tampilan untuk tiap role.
+     */
+    public const ROLE_LABELS = [
+        'super_admin' => 'Super Admin',
+        'admin_kabupaten' => 'Admin Kabupaten',
+        'admin_kecamatan' => 'Admin Kecamatan',
+        'admin_desa' => 'Admin Desa',
+        'executive_view' => 'Executive View',
+    ];
+
+    /**
      * Check if user is Super Admin
      */
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';
+    }
+
+    /**
+     * Check if user is Admin Kabupaten (Dinas PMD)
+     */
+    public function isAdminKabupaten(): bool
+    {
+        return $this->role === 'admin_kabupaten';
+    }
+
+    /**
+     * Cakupan se-kabupaten (lihat semua desa): Super Admin & Admin Kabupaten.
+     * Dipakai untuk scoping data; TIDAK memberi hak teknis
+     * (pengaturan sistem & backup tetap eksklusif Super Admin).
+     */
+    public function hasKabupatenScope(): bool
+    {
+        return $this->isSuperAdmin() || $this->isAdminKabupaten();
     }
 
     /**
@@ -143,12 +172,53 @@ class User extends Authenticatable
     }
 
     /**
+     * Role apa saja yang boleh dibuat/di-assign oleh user ini.
+     */
+    public function manageableRoles(): array
+    {
+        if ($this->isSuperAdmin()) {
+            return ['super_admin', 'admin_kabupaten', 'admin_kecamatan', 'admin_desa', 'executive_view'];
+        }
+
+        if ($this->isAdminKabupaten()) {
+            // Admin Kabupaten mengelola semua akun KECUALI Super Admin
+            return ['admin_kabupaten', 'admin_kecamatan', 'admin_desa', 'executive_view'];
+        }
+
+        if ($this->isAdminKecamatan()) {
+            return ['admin_desa'];
+        }
+
+        return [];
+    }
+
+    /**
+     * Apakah user ini boleh mengelola (edit/hapus/reset) akun target.
+     */
+    public function canManageUser(User $target): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->isAdminKabupaten()) {
+            return ! $target->isSuperAdmin();
+        }
+
+        if ($this->isAdminKecamatan()) {
+            return $target->isAdminDesa() && $target->kecamatan_id === $this->kecamatan_id;
+        }
+
+        return false;
+    }
+
+    /**
      * Get list of accessible desa for current user based on role
      */
     public function getAccessibleDesas()
     {
-        if ($this->isSuperAdmin()) {
-            // Super Admin dapat akses semua desa
+        if ($this->hasKabupatenScope()) {
+            // Super Admin & Admin Kabupaten dapat akses semua desa
             return Desa::orderBy('nama_desa')->get();
         }
 
@@ -172,7 +242,7 @@ class User extends Authenticatable
      */
     public function canAccessDesa(int $desaId): bool
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->hasKabupatenScope()) {
             return true;
         }
 

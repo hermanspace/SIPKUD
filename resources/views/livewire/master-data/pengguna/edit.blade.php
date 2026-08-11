@@ -50,15 +50,13 @@
             <?php endif; ?>
 
             <label class="flux-label block text-sm font-medium text-zinc-700 dark:text-zinc-300">Role</label>
+            @php
+                $roleLabels = \App\Models\User::ROLE_LABELS;
+            @endphp
             <select wire:model.live="role" required {{ $isAdminKecamatan ? 'disabled' : '' }} class="flux-input block w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white">
-                @if(!$isAdminKecamatan)
-                    <option value="super_admin">Super Admin</option>
-                    <option value="admin_kecamatan">Admin Kecamatan</option>
-                @endif
-                <option value="admin_desa">Admin Desa</option>
-                @if(!$isAdminKecamatan)
-                    <option value="executive_view">Executive View</option>
-                @endif
+                @foreach(auth()->user()->manageableRoles() as $r)
+                    <option value="{{ $r }}">{{ $roleLabels[$r] ?? $r }}</option>
+                @endforeach
             </select>
             @error('role')<p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror
             @if($isAdminKecamatan)
@@ -68,7 +66,7 @@
             @php
             $showDesaSelect = $kecamatan_id && $role !== 'admin_kecamatan';
             @endphp
-            @if($role !== 'super_admin')
+            @if(!in_array($role, ['super_admin', 'admin_kabupaten']))
             <div class="space-y-4">
                 <label class="flux-label block text-sm font-medium text-zinc-700 dark:text-zinc-300">Kecamatan</label>
                 <select wire:model.live="kecamatan_id" {{ $isAdminKecamatan ? 'disabled' : '' }} required class="flux-input block w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white">

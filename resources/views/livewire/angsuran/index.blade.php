@@ -81,7 +81,7 @@
                     placeholder="Cari nomor pinjaman atau nama anggota..."
                     class="w-full sm:w-64"
                 />
-                @if(auth()->user()->isSuperAdmin())
+                @if(auth()->user()->hasKabupatenScope())
                     <flux:select wire:model.live="kecamatanFilter" class="w-full sm:w-48">
                         <option value="">Semua Kecamatan</option>
                         @foreach($kecamatan as $kec)
@@ -129,7 +129,7 @@
                         <th class="px-2 py-2 text-left text-xs font-semibold w-12">No</th>
                         <th class="px-2 py-2 text-left text-xs font-semibold min-w-[150px]">Nomor Pinjaman</th>
                         <th class="px-2 py-2 text-left text-xs font-semibold min-w-[150px]">Anggota</th>
-                        @if(auth()->user()->isSuperAdmin())
+                        @if(auth()->user()->hasKabupatenScope())
                             <th class="px-2 py-2 text-left text-xs font-semibold min-w-[120px]">Kecamatan</th>
                             <th class="px-2 py-2 text-left text-xs font-semibold min-w-[120px]">Desa</th>
                         @endif
@@ -152,7 +152,7 @@
                             <td class="px-2 py-2">
                                 <div class="font-medium text-sm">{{ $item->pinjaman->anggota->nama }}</div>
                             </td>
-                            @if(auth()->user()->isSuperAdmin())
+                            @if(auth()->user()->hasKabupatenScope())
                                 <td class="px-2 py-2 text-xs">
                                     <div class="truncate max-w-[120px]" title="{{ $item->pinjaman->desa->kecamatan->nama_kecamatan ?? '-' }}">
                                         {{ $item->pinjaman->desa->kecamatan->nama_kecamatan ?? '-' }}
@@ -200,7 +200,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->isSuperAdmin() ? '12' : '10' }}" class="px-2 py-8 text-center text-xs text-zinc-600 dark:text-zinc-400">
+                            <td colspan="{{ auth()->user()->hasKabupatenScope() ? '12' : '10' }}" class="px-2 py-8 text-center text-xs text-zinc-600 dark:text-zinc-400">
                                 Tidak ada data angsuran ditemukan.
                             </td>
                         </tr>

@@ -63,8 +63,8 @@ Route::middleware(['auth'])->group(function () {
         )
         ->name('two-factor.show');
 
-    // Super Admin Routes - Master Data
-    Route::middleware(['can:super_admin'])->group(function () {
+    // Super Admin & Admin Kabupaten (Dinas PMD) - kelola wilayah & pengumuman
+    Route::middleware(['can:kelola_kabupaten'])->group(function () {
         // Kecamatan CRUD
         Route::get('kecamatan', App\Livewire\MasterData\Kecamatan\Index::class)->name('kecamatan.index');
         Route::get('kecamatan/create', App\Livewire\MasterData\Kecamatan\Create::class)->name('kecamatan.create');
@@ -77,11 +77,11 @@ Route::middleware(['auth'])->group(function () {
 
         // Pengumuman CRUD
         Route::get('pengumuman', App\Livewire\MasterData\Pengumuman\Index::class)->name('pengumuman.index');
+    });
 
-        // Pengaturan Sistem
+    // Khusus Super Admin (teknis) - Pengaturan Sistem & Backup
+    Route::middleware(['can:super_admin'])->group(function () {
         Route::get('pengaturan', App\Livewire\MasterData\Pengaturan\Edit::class)->name('pengaturan.index');
-
-        // Backup & Restore Database
         Route::get('backup', App\Livewire\MasterData\Backup\Index::class)->name('backup.index');
     });
 

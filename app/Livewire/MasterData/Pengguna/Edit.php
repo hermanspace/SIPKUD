@@ -35,15 +35,13 @@ class Edit extends Component
     {
         $currentUser = Auth::user();
 
-        // Super Admin dan Admin Kecamatan dapat mengedit pengguna
-        if ($currentUser->isSuperAdmin()) {
-            Gate::authorize('super_admin');
-        } else {
-            Gate::authorize('admin_kecamatan');
-            // Admin Kecamatan hanya bisa mengedit admin_desa di kecamatannya
-            if (! $user->isAdminDesa() || $user->kecamatan_id !== $currentUser->kecamatan_id) {
-                abort(403, 'Anda tidak memiliki izin untuk mengedit pengguna ini.');
-            }
+        // Gate admin_kecamatan mencakup Super Admin, Admin Kabupaten, dan Admin Kecamatan
+        Gate::authorize('admin_kecamatan');
+
+        // Pemanggil harus berwenang atas akun target: Admin Kabupaten tidak
+        // boleh menyentuh Super Admin; Admin Kecamatan hanya admin desa binaannya
+        if (! $currentUser->canManageUser($user)) {
+            abort(403, 'Anda tidak memiliki izin untuk mengedit pengguna ini.');
         }
 
         $this->user = $user;
@@ -56,8 +54,8 @@ class Edit extends Component
 
     public function updatedRole(): void
     {
-        // Reset kecamatan and desa when role changes
-        if ($this->role === 'super_admin') {
+        // Role tingkat kabupaten tidak memiliki penempatan kecamatan/desa
+        if (in_array($this->role, ['super_admin', 'admin_kabupaten'])) {
             $this->kecamatan_id = null;
             $this->desa_id = null;
         } elseif ($this->role === 'admin_kecamatan') {
@@ -65,10 +63,10 @@ class Edit extends Component
             $this->desa_id = null;
         }
 
-        // Jika user adalah Admin Kecamatan, mereka hanya bisa mengedit menjadi admin_desa
-        if (Auth::user()->isAdminKecamatan() && $this->role !== 'admin_desa') {
+        // Tolak role di luar kewenangan pengedit (server-side, bukan cuma UI)
+        if (! in_array($this->role, Auth::user()->manageableRoles())) {
             $this->role = 'admin_desa';
-            $this->dispatch('error', message: 'Anda hanya dapat mengubah menjadi Admin Desa.');
+            $this->dispatch('error', message: 'Anda tidak berwenang memberikan role tersebut.');
         }
     }
 
@@ -82,11 +80,14 @@ class Edit extends Component
     {
         $user = Auth::user();
 
-        // Validasi role berdasarkan user yang mengedit
-        $allowedRoles = ['super_admin', 'admin_kecamatan', 'admin_desa', 'executive_view'];
-        if ($user->isAdminKecamatan()) {
-            // Admin Kecamatan hanya bisa mengubah menjadi admin_desa
-            $allowedRoles = ['admin_desa'];
+        // Validasi role berdasarkan kewenangan user yang mengedit
+        $allowedRoles = $user->manageableRoles();
+
+        // Pertahanan berlapis: pastikan target masih dalam kewenangan pengedit
+        if (! $user->canManageUser($this->user)) {
+            $this->dispatch('error', message: 'Anda tidak berwenang mengubah pengguna ini.');
+
+            return;
         }
 
         $rules = [
@@ -109,7 +110,7 @@ class Edit extends Component
                 'required_if:role,admin_desa,executive_view',
                 'exists:desa,id',
                 function ($attribute, $value, $fail) {
-                    if (! in_array($this->role, ['super_admin', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
+                    if (! in_array($this->role, ['super_admin', 'admin_kabupaten', 'admin_kecamatan']) && $value && $this->kecamatan_id) {
                         $desa = Desa::find($value);
                         if ($desa && $desa->kecamatan_id !== $this->kecamatan_id) {
                             $fail('Desa harus berada di kecamatan yang dipilih.');
@@ -162,8 +163,8 @@ class Edit extends Component
             $validated['password'] = Hash::make($validated['password']);
         }
 
-        // Set kecamatan_id and desa_id to null for super_admin
-        if ($validated['role'] === 'super_admin') {
+        // Role tingkat kabupaten tidak memiliki penempatan kecamatan/desa
+        if (in_array($validated['role'], ['super_admin', 'admin_kabupaten'])) {
             $validated['kecamatan_id'] = null;
             $validated['desa_id'] = null;
         }

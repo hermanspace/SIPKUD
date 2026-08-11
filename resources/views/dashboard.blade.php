@@ -10,11 +10,11 @@
             ->get();
     @endphp
 
-    @if(auth()->user()->isSuperAdmin())
-        {{-- Super Admin Dashboard --}}
+    @if(auth()->user()->hasKabupatenScope())
+        {{-- Dashboard tingkat kabupaten: Super Admin & Admin Kabupaten (Dinas PMD) --}}
         <div class="flex h-full w-full flex-1 flex-col gap-6">
             <div>
-                <flux:heading size="xl">Dashboard Super Admin PMD</flux:heading>
+                <flux:heading size="xl">{{ auth()->user()->isSuperAdmin() ? 'Dashboard Super Admin PMD' : 'Dashboard Admin Kabupaten (Dinas PMD)' }}</flux:heading>
                 <flux:heading size="sm" class="mt-2 text-zinc-600 dark:text-zinc-400">
                     Sistem Informasi Pelaporan Keuangan USP Desa
                 </flux:heading>

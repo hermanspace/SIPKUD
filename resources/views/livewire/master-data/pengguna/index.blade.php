@@ -4,7 +4,9 @@
             <flux:heading size="xl">Master Pengguna</flux:heading>
             <flux:heading size="sm" class="mt-2 text-zinc-600 dark:text-zinc-400">
                 @if(auth()->user()->isSuperAdmin())
-                    Kelola pengguna sistem (Super Admin, Admin Kecamatan, Admin Desa, Executive View)
+                    Kelola seluruh pengguna sistem (semua role)
+                @elseif(auth()->user()->isAdminKabupaten())
+                    Kelola pengguna sistem (selain Super Admin)
                 @elseif(auth()->user()->isAdminKecamatan())
                     Kelola admin desa di kecamatan Anda
                 @else
@@ -27,11 +29,14 @@
                     icon="magnifying-glass"
                 />
             </div>
-            @if(auth()->user()->isSuperAdmin())
+            @if(auth()->user()->hasKabupatenScope())
                 <div class="w-full sm:w-48">
                     <flux:select wire:model.live="roleFilter" placeholder="Filter Role">
                         <option value="">Semua Role</option>
-                        <option value="super_admin">Super Admin</option>
+                        @if(auth()->user()->isSuperAdmin())
+                            <option value="super_admin">Super Admin</option>
+                        @endif
+                        <option value="admin_kabupaten">Admin Kabupaten</option>
                         <option value="admin_kecamatan">Admin Kecamatan</option>
                         <option value="admin_desa">Admin Desa</option>
                         <option value="executive_view">Executive View</option>
@@ -89,18 +94,13 @@
                             <td class="px-4 py-3 text-sm">
                                 <flux:badge :variant="match($user->role) {
                                     'super_admin' => 'primary',
+                                    'admin_kabupaten' => 'primary',
                                     'admin_kecamatan' => 'warning',
                                     'admin_desa' => 'success',
                                     'executive_view' => 'info',
                                     default => 'secondary'
                                 }">
-                                    {{ match($user->role) {
-                                        'super_admin' => 'Super Admin',
-                                        'admin_kecamatan' => 'Admin Kecamatan',
-                                        'admin_desa' => 'Admin Desa',
-                                        'executive_view' => 'Executive View',
-                                        default => $user->role
-                                    } }}
+                                    {{ \App\Models\User::ROLE_LABELS[$user->role] ?? $user->role }}
                                 </flux:badge>
                             </td>
                             <td class="px-4 py-3 text-sm">{{ $user->kecamatan?->nama_kecamatan ?? '-' }}</td>
