@@ -59,7 +59,9 @@ Selesai — buka:
 
 - Aplikasi: http://localhost:8000
 - Mailpit (email dev): http://localhost:8025
-- PostgreSQL dari host: `localhost:5432` (user/db/pass default: `sipkud`)
+- PostgreSQL dari host: `localhost:54320` (user/db/pass default: `sipkud`;
+  port host sengaja 54320 agar tidak bentrok dengan PostgreSQL lokal —
+  override lewat `.env`: `DB_HOST_PORT=...`)
 
 Perintah harian:
 

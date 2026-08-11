@@ -108,7 +108,9 @@ services:
     restart: unless-stopped
     ports:
       # Ekspos ke host untuk akses via GUI (DBeaver/TablePlus dsb.)
-      - "${DB_HOST_PORT:-5432}:5432"
+      # Default 54320 agar tidak bentrok dengan PostgreSQL lokal di 5432;
+      # override lewat .env: DB_HOST_PORT=5432
+      - "${DB_HOST_PORT:-54320}:5432"
     environment:
       POSTGRES_DB: ${DB_DATABASE:-sipkud}
       POSTGRES_USER: ${DB_USERNAME:-sipkud}
