@@ -37,6 +37,8 @@ setup: flux-auth ## Setup dev pertama kali: env, build, up, composer, key, migra
 	$(DC_DEV) up -d
 	$(DC_DEV) exec app composer install
 	$(DC_DEV) exec app php artisan key:generate --no-interaction
+	@# env_file dibaca saat container DIBUAT - recreate agar APP_KEY baru terbaca
+	$(DC_DEV) up -d --force-recreate app queue scheduler
 	$(DC_DEV) exec app php artisan migrate --no-interaction
 	$(DC_DEV) exec app php artisan storage:link || true
 	$(DC_DEV) run --rm node sh -c "npm install && npm run build"

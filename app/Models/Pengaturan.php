@@ -39,12 +39,26 @@ class Pengaturan extends Model
     ];
 
     /**
+     * Cache per-request: getSettings() dipanggil view composer '*' sehingga
+     * tanpa cache setiap partial/komponen memicu query pengaturan sendiri
+     * (ratusan query identik per halaman).
+     */
+    protected static ?self $cachedSettings = null;
+
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            static::$cachedSettings = null;
+        });
+    }
+
+    /**
      * Get singleton instance of pengaturan
      * Hanya ada satu record pengaturan dalam sistem
      */
     public static function getSettings(): self
     {
-        return static::firstOrCreate(
+        return static::$cachedSettings ??= static::firstOrCreate(
             ['id' => 1],
             [
                 'nama_instansi' => 'SIPKUD',
