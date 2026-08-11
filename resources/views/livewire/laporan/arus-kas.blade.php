@@ -14,11 +14,7 @@
     <flux:card class="p-6">
         <div class="mb-6 grid gap-4 md:grid-cols-4">
             @if($desas->count() > 1)
-                <flux:select wire:model.live="selectedDesaId" label="Desa">
-                    @foreach($desas as $desa)
-                        <option value="{{ $desa->id }}">{{ $desa->nama_desa }}</option>
-                    @endforeach
-                </flux:select>
+                <x-desa-picker :desas="$desas" />
             @endif
             <flux:select wire:model.live="unitUsahaId" label="Unit Usaha">
                 <option value="">Semua Unit</option>

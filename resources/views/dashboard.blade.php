@@ -20,6 +20,9 @@
                 </flux:heading>
             </div>
 
+            {{-- KPI Keuangan Eksekutif --}}
+            @include('partials.dashboard-kpi', ['scopeDesaId' => null, 'scopeKecamatanId' => null])
+
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Total Kecamatan -->
                 <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
@@ -250,6 +253,9 @@
                     Sistem Informasi Pelaporan Keuangan USP Desa
                 </flux:heading>
             </div>
+
+            {{-- KPI Keuangan Eksekutif --}}
+            @include('partials.dashboard-kpi', ['scopeDesaId' => null, 'scopeKecamatanId' => auth()->user()->kecamatan_id])
 
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Total Desa -->
@@ -496,6 +502,9 @@
                     @endif
                 </flux:heading>
             </div>
+
+            {{-- KPI Keuangan Eksekutif --}}
+            @include('partials.dashboard-kpi', ['scopeDesaId' => auth()->user()->desa_id, 'scopeKecamatanId' => null])
 
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Total Kelompok -->

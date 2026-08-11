@@ -14,11 +14,7 @@
     <flux:card class="p-6">
         <div class="mb-6 grid gap-4 md:grid-cols-3">
             @if($desas->count() > 1)
-                <flux:select wire:model.live="selectedDesaId" label="Desa">
-                    @foreach($desas as $desa)
-                        <option value="{{ $desa->id }}">{{ $desa->nama_desa }}</option>
-                    @endforeach
-                </flux:select>
+                <x-desa-picker :desas="$desas" />
             @endif
             <flux:select wire:model.live="tahun" label="Tahun Buku">
                 @for($y = (int) now()->format('Y'); $y >= 2024; $y--)
