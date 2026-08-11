@@ -10,13 +10,13 @@ test('profile page is displayed', function () {
     $this->get('/settings/profile')->assertOk();
 });
 
-test('profile information can be updated', function () {
-    $user = User::factory()->create();
+test('super admin dapat mengubah informasi profil', function () {
+    $user = User::factory()->superAdmin()->create();
 
     $this->actingAs($user);
 
     $response = Livewire::test(Profile::class)
-        ->set('name', 'Test User')
+        ->set('nama', 'Test User')
         ->set('email', 'test@example.com')
         ->call('updateProfileInformation');
 
@@ -24,18 +24,31 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    expect($user->name)->toEqual('Test User');
+    expect($user->nama)->toEqual('Test User');
     expect($user->email)->toEqual('test@example.com');
     expect($user->email_verified_at)->toBeNull();
 });
 
-test('email verification status is unchanged when email address is unchanged', function () {
-    $user = User::factory()->create();
+test('non super admin tidak dapat mengubah informasi profil', function () {
+    $user = User::factory()->create(); // role default: admin_desa
+    $namaAwal = $user->nama;
+
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->set('nama', 'Nama Baru')
+        ->call('updateProfileInformation');
+
+    expect($user->refresh()->nama)->toEqual($namaAwal);
+});
+
+test('status verifikasi email tidak berubah jika email tidak berubah', function () {
+    $user = User::factory()->superAdmin()->create();
 
     $this->actingAs($user);
 
     $response = Livewire::test(Profile::class)
-        ->set('name', 'Test User')
+        ->set('nama', 'Test User')
         ->set('email', $user->email)
         ->call('updateProfileInformation');
 
@@ -44,8 +57,9 @@ test('email verification status is unchanged when email address is unchanged', f
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+test('super admin dapat menghapus akunnya jika bukan super admin terakhir', function () {
+    User::factory()->superAdmin()->create(); // super admin lain agar bukan yang terakhir
+    $user = User::factory()->superAdmin()->create();
 
     $this->actingAs($user);
 
@@ -61,8 +75,9 @@ test('user can delete their account', function () {
     expect(auth()->check())->toBeFalse();
 });
 
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
+test('password yang benar harus diberikan untuk menghapus akun', function () {
+    User::factory()->superAdmin()->create();
+    $user = User::factory()->superAdmin()->create();
 
     $this->actingAs($user);
 
@@ -71,6 +86,30 @@ test('correct password must be provided to delete account', function () {
         ->call('deleteUser');
 
     $response->assertHasErrors(['password']);
+
+    expect($user->fresh())->not->toBeNull();
+});
+
+test('non super admin tidak dapat menghapus akunnya sendiri', function () {
+    $user = User::factory()->create(); // role default: admin_desa
+
+    $this->actingAs($user);
+
+    Livewire::test('settings.delete-user-form')
+        ->set('password', 'password')
+        ->call('deleteUser');
+
+    expect($user->fresh())->not->toBeNull();
+});
+
+test('super admin terakhir tidak dapat menghapus akunnya', function () {
+    $user = User::factory()->superAdmin()->create();
+
+    $this->actingAs($user);
+
+    Livewire::test('settings.delete-user-form')
+        ->set('password', 'password')
+        ->call('deleteUser');
 
     expect($user->fresh())->not->toBeNull();
 });
