@@ -35,7 +35,8 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      # /up = health endpoint ringan Laravel (tanpa render halaman penuh)
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -67,10 +68,10 @@ services:
     image: sipkud-app:latest
     container_name: sipkud-scheduler
     restart: unless-stopped
-    command: >
-      sh -c "while true; do php artisan schedule:run --no-interaction & sleep 60; done"
+    # schedule:work = long-running scheduler resmi Laravel (tanpa overlap).
+    # Tidak me-mount kode host: semua kontainer memakai kode dari image yang sama.
+    command: php artisan schedule:work
     volumes:
-      - .:/var/www/html
       - sipkud-storage:/var/www/html/storage
     environment:
       - APP_ENV=production

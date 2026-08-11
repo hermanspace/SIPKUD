@@ -141,9 +141,9 @@ RUN if [ -f "$PHP_INI_DIR/php.ini-production" ]; then \
 
 EXPOSE 80
 
-# Health check via HTTP
+# Health check via endpoint /up (health route Laravel, ringan)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+    CMD curl -f http://localhost/up || exit 1
 
 # Entrypoint: fix permissions + storage:link; CMD default = Apache (overridden by queue/scheduler)
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
