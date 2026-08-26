@@ -68,8 +68,8 @@ class Index extends Component
         // Filter search
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('nomor_jurnal', 'like', '%'.$this->search.'%')
-                    ->orWhere('uraian', 'like', '%'.$this->search.'%');
+                $q->whereLike('nomor_jurnal', '%'.$this->search.'%')
+                    ->orWhereLike('uraian', '%'.$this->search.'%');
             });
         }
 

@@ -147,8 +147,8 @@ class Create extends Component
             ->where('tipe_akun', 'aset')
             ->where(function ($q) {
                 $q->where('kode_akun', 'like', '1-10%') // Kas dan Bank
-                    ->orWhere('nama_akun', 'like', '%kas%')
-                    ->orWhere('nama_akun', 'like', '%bank%');
+                    ->orWhereLike('nama_akun', '%kas%')
+                    ->orWhereLike('nama_akun', '%bank%');
             })
             ->orderBy('kode_akun')
             ->get();

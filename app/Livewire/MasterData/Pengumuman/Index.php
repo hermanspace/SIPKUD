@@ -156,8 +156,8 @@ class Index extends Component
         // Search
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('judul', 'like', '%'.$this->search.'%')
-                    ->orWhere('isi', 'like', '%'.$this->search.'%');
+                $q->whereLike('judul', '%'.$this->search.'%')
+                    ->orWhereLike('isi', '%'.$this->search.'%');
             });
         }
 

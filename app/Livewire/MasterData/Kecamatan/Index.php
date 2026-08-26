@@ -56,8 +56,8 @@ class Index extends Component
         $query = Kecamatan::withCount('desa')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama_kecamatan', 'like', '%'.$this->search.'%')
-                        ->orWhere('kode_kecamatan', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama_kecamatan', '%'.$this->search.'%')
+                        ->orWhereLike('kode_kecamatan', '%'.$this->search.'%');
                 });
             })
             ->when($this->statusFilter, function ($query) {

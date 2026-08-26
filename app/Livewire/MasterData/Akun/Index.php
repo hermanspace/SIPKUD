@@ -65,8 +65,8 @@ class Index extends Component
     {
         $query = Akun::when($this->search, function ($query) {
             $query->where(function ($q) {
-                $q->where('kode_akun', 'like', '%'.$this->search.'%')
-                    ->orWhere('nama_akun', 'like', '%'.$this->search.'%');
+                $q->whereLike('kode_akun', '%'.$this->search.'%')
+                    ->orWhereLike('nama_akun', '%'.$this->search.'%');
             });
         })
             ->when($this->tipeFilter, function ($query) {

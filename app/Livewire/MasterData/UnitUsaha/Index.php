@@ -66,8 +66,8 @@ class Index extends Component
 
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('kode_unit', 'like', '%'.$this->search.'%')
-                    ->orWhere('nama_unit', 'like', '%'.$this->search.'%');
+                $q->whereLike('kode_unit', '%'.$this->search.'%')
+                    ->orWhereLike('nama_unit', '%'.$this->search.'%');
             });
         }
 

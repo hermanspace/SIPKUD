@@ -84,8 +84,8 @@ class Index extends Component
         $query = Desa::with('kecamatan')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama_desa', 'like', '%'.$this->search.'%')
-                        ->orWhere('kode_desa', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama_desa', '%'.$this->search.'%')
+                        ->orWhereLike('kode_desa', '%'.$this->search.'%');
                 });
             })
             ->when($this->statusFilter, function ($query) {

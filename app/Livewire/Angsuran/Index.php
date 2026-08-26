@@ -171,9 +171,9 @@ class Index extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('pinjaman', function ($q) {
-                        $q->where('nomor_pinjaman', 'like', '%'.$this->search.'%')
+                        $q->whereLike('nomor_pinjaman', '%'.$this->search.'%')
                             ->orWhereHas('anggota', function ($q) {
-                                $q->where('nama', 'like', '%'.$this->search.'%');
+                                $q->whereLike('nama', '%'.$this->search.'%');
                             });
                     });
                 });
@@ -203,9 +203,9 @@ class Index extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->whereHas('pinjaman', function ($q) {
-                        $q->where('nomor_pinjaman', 'like', '%'.$this->search.'%')
+                        $q->whereLike('nomor_pinjaman', '%'.$this->search.'%')
                             ->orWhereHas('anggota', function ($q) {
-                                $q->where('nama', 'like', '%'.$this->search.'%');
+                                $q->whereLike('nama', '%'.$this->search.'%');
                             });
                     });
                 });

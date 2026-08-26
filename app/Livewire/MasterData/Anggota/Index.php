@@ -232,8 +232,8 @@ class Index extends Component
         return Anggota::with(['kelompok', 'desa.kecamatan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%'.$this->search.'%')
-                        ->orWhere('alamat', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama', '%'.$this->search.'%')
+                        ->orWhereLike('alamat', '%'.$this->search.'%');
                 });
             })
             ->when($this->kelompokFilter, function ($query) {
@@ -278,8 +278,8 @@ class Index extends Component
         $query = Anggota::with(['kelompok', 'desa.kecamatan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%'.$this->search.'%')
-                        ->orWhere('alamat', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama', '%'.$this->search.'%')
+                        ->orWhereLike('alamat', '%'.$this->search.'%');
                 });
             })
             ->when($this->kelompokFilter, function ($query) {

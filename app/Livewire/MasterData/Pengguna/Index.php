@@ -104,8 +104,8 @@ class Index extends Component
         $query = User::with(['kecamatan', 'desa'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama', 'like', '%'.$this->search.'%')
-                        ->orWhere('email', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama', '%'.$this->search.'%')
+                        ->orWhereLike('email', '%'.$this->search.'%');
                 });
             });
 

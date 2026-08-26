@@ -89,8 +89,8 @@ class Index extends Component
             ->with('desa.kecamatan')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('nama_kelompok', 'like', '%'.$this->search.'%')
-                        ->orWhere('keterangan', 'like', '%'.$this->search.'%');
+                    $q->whereLike('nama_kelompok', '%'.$this->search.'%')
+                        ->orWhereLike('keterangan', '%'.$this->search.'%');
                 });
             })
             ->when($this->statusFilter, function ($query) {

@@ -113,8 +113,8 @@ class Index extends Component
         $query = SektorUsaha::withCount('pinjaman')
             ->with('desa')
             ->when($this->search, fn ($q) => $q->where(function ($q) {
-                $q->where('nama', 'like', '%'.$this->search.'%')
-                    ->orWhere('keterangan', 'like', '%'.$this->search.'%');
+                $q->whereLike('nama', '%'.$this->search.'%')
+                    ->orWhereLike('keterangan', '%'.$this->search.'%');
             }))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->desaFilter, fn ($q) => $q->where('desa_id', $this->desaFilter))
