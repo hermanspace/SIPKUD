@@ -9,18 +9,7 @@
 
     <flux:card class="p-6">
         <form wire:submit="save" class="space-y-6">
-            <flux:select wire:model.live="pinjaman_id" label="Pinjaman" required>
-                <option value="">Pilih Pinjaman</option>
-                @foreach($pinjaman as $p)
-                    @php
-                        $sisaPinjaman = $p->sisa_pinjaman;
-                    @endphp
-                    <option value="{{ $p->id }}">
-                        {{ $p->nomor_pinjaman }} - {{ $p->anggota->nama }} 
-                        (Sisa: Rp {{ number_format($sisaPinjaman, 0, ',', '.') }})
-                    </option>
-                @endforeach
-            </flux:select>
+            <x-pinjaman-picker :pinjaman="$pinjaman" />
             <flux:error name="pinjaman_id" />
 
             <flux:input 
