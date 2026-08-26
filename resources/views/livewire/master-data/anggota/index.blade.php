@@ -156,6 +156,9 @@
                                     class="font-medium text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors text-left">
                                     {{ $item->nama }}
                                 </button>
+                                @if($item->nik_sementara)
+                                    <flux:badge size="sm" variant="warning" class="ml-1">NIK sementara</flux:badge>
+                                @endif
                             </td>
                             <td class="px-2 py-2">
                                 <flux:badge size="sm">{{ $item->kelompok->nama_kelompok ?? '-' }}</flux:badge>

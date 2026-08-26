@@ -79,6 +79,12 @@ class Edit extends Component
         $validated['updated_by'] = Auth::id();
         $validated['tanggal_gabung'] = Carbon::parse($validated['tanggal_gabung']);
 
+        // NIK sementara (hasil impor historis) otomatis bersih begitu
+        // admin mengganti NIK dengan NIK asli.
+        if ($this->anggota->nik_sementara && $validated['nik'] !== $this->anggota->nik) {
+            $validated['nik_sementara'] = false;
+        }
+
         $this->anggota->update($validated);
 
         $this->dispatch('success', message: 'Anggota berhasil diperbarui.');

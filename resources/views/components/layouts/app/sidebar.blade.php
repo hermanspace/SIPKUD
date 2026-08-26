@@ -143,6 +143,7 @@
                         <flux:navlist.item icon="briefcase" :href="route('unit-usaha.index')" :current="request()->routeIs('unit-usaha.*')" wire:navigate>{{ __('Unit Usaha') }}</flux:navlist.item>
                         <flux:navlist.item icon="computer-desktop" :href="route('aset-tetap.index')" :current="request()->routeIs('aset-tetap.*')" wire:navigate>{{ __('Aset Tetap') }}</flux:navlist.item>
                         <flux:navlist.item icon="building-storefront" :href="route('sektor-usaha.index')" :current="request()->routeIs('sektor-usaha.*')" wire:navigate>{{ __('Sektor Usaha') }}</flux:navlist.item>
+                        <flux:navlist.item icon="arrow-up-tray" :href="route('impor-historis.index')" :current="request()->routeIs('impor-historis.*')" wire:navigate>{{ __('Impor Data Historis') }}</flux:navlist.item>
                     </flux:navlist.group>
                 </flux:navlist>
 

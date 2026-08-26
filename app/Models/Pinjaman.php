@@ -31,6 +31,8 @@ class Pinjaman extends Model
         'anggota_id',
         'sektor_usaha_id',
         'nomor_pinjaman',
+        'no_sppk',
+        'sumber',
         'tanggal_pinjaman',
         'jumlah_pinjaman',
         'jangka_waktu_bulan',

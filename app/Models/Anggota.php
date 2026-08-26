@@ -31,6 +31,7 @@ class Anggota extends Model
         'kelompok_id',
         'nama',
         'nik',
+        'nik_sementara',
         'alamat',
         'nomor_hp',
         'jenis_kelamin',
@@ -45,6 +46,7 @@ class Anggota extends Model
         return [
             'tanggal_gabung' => 'date',
             'status' => 'string',
+            'nik_sementara' => 'boolean',
         ];
     }
 

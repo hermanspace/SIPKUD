@@ -164,5 +164,8 @@ Route::middleware(['auth'])->group(function () {
         // Buku Memorial CRUD
         Route::get('memorial/create', App\Livewire\Memorial\Create::class)->name('memorial.create');
         Route::get('memorial/{id}/edit', App\Livewire\Memorial\Edit::class)->name('memorial.edit');
+
+        // Impor data historis dari Excel UEK-SP lama
+        Route::get('impor-historis', App\Livewire\MasterData\ImportHistoris\Index::class)->name('impor-historis.index');
     });
 });

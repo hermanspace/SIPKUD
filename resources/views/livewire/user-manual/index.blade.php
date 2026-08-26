@@ -54,6 +54,7 @@
                     ['Unit Usaha', 'Pisahkan pembukuan per unit (USP, UED-SP, dll). Semua transaksi & laporan bisa difilter per unit.', ['admin_desa', 'admin_kabupaten', 'super_admin']],
                     ['Sektor Usaha', 'Kategori usaha peminjam - dipakai statistik dashboard.', ['admin_desa', 'admin_kecamatan', 'admin_kabupaten', 'super_admin']],
                     ['Aset Tetap (BARU)', 'Daftarkan aset (harga, umur ekonomis, akun terkait). Penyusutan garis lurus dijurnal OTOMATIS tiap awal bulan; nilai buku tampil di daftar.', ['admin_desa', 'admin_kabupaten', 'super_admin']],
+                    ['Impor Data Historis (BARU)', 'Muat riwayat pemanfaat + pinjaman dari file Excel UEK-SP lama (sheet LPP-UEK) sekali saat mulai memakai SIPKUD: anggota dibuat dengan NIK sementara, riwayat angsuran terisi, dan saldo awal piutang dijurnal otomatis. Aman diunggah ulang (anti-duplikat No SPPK).', ['admin_desa']],
                 ],
             ],
             'Transaksi Harian' => [

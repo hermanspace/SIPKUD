@@ -87,6 +87,13 @@ class Create extends Component
             return;
         }
 
+        // Validasi: Anggota hasil impor historis wajib melengkapi NIK asli dulu
+        if ($anggota->nik_sementara) {
+            $this->addError('anggota_id', 'NIK anggota ini masih NIK sementara hasil impor. Lengkapi NIK asli di menu Anggota sebelum memberi pinjaman baru.');
+
+            return;
+        }
+
         // Validasi: Satu anggota hanya boleh memiliki satu pinjaman aktif
         $pinjamanAktif = Pinjaman::where('anggota_id', $validated['anggota_id'])
             ->where('status_pinjaman', 'aktif')
