@@ -4,8 +4,10 @@ namespace App\Livewire\Pinjaman;
 
 use App\Exports\PinjamanExport;
 use App\Models\Desa;
+use App\Models\Jurnal;
 use App\Models\Kecamatan;
 use App\Models\Pinjaman;
+use App\Models\TransaksiKas;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -72,9 +74,33 @@ class Index extends Component
 
         $pinjaman = Pinjaman::findOrFail($pinjamanId);
 
-        // Catatan: Di fase selanjutnya, akan ada relasi ke modul Angsuran
-        // Jika pinjaman memiliki angsuran, tidak boleh dihapus
-        // Untuk sekarang, pinjaman bisa dihapus karena belum ada relasi ke modul lain
+        if (! $user->canAccessDesa($pinjaman->desa_id)) {
+            $this->dispatch('error', message: 'Anda tidak memiliki akses ke pinjaman ini.');
+
+            return;
+        }
+
+        // Pinjaman yang sudah punya jejak TIDAK boleh dihapus - hanya baris
+        // salah input yang masih polos yang dapat dihapus.
+        if ($pinjaman->angsuran()->exists()) {
+            $this->dispatch('error', message: 'Pinjaman ini sudah memiliki riwayat angsuran dan tidak dapat dihapus. Bila salah catat, perbaiki lewat menu Edit.');
+
+            return;
+        }
+
+        if ($pinjaman->sumber === 'import_excel') {
+            $this->dispatch('error', message: 'Pinjaman hasil impor data historis tidak dapat dihapus - nilainya tercakup dalam jurnal saldo awal piutang.');
+
+            return;
+        }
+
+        $adaCatatanPembukuan = Jurnal::withoutGlobalScopes()->where('pinjaman_id', $pinjaman->id)->exists()
+            || TransaksiKas::withoutGlobalScopes()->where('pinjaman_id', $pinjaman->id)->exists();
+        if ($adaCatatanPembukuan) {
+            $this->dispatch('error', message: 'Pinjaman ini sudah memiliki catatan pembukuan tertaut dan tidak dapat dihapus.');
+
+            return;
+        }
 
         $pinjaman->delete();
         $this->dispatch('success', message: 'Pinjaman berhasil dihapus.');
