@@ -287,6 +287,8 @@
 
         {{ $slot }}
 
+        @include('partials.toast')
+
         @fluxScripts
     </body>
 </html>

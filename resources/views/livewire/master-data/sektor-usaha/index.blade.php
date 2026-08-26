@@ -1,16 +1,4 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6"
-     x-data="{ showSuccess: false, showError: false, successMessage: '', errorMessage: '' }"
-     x-init="
-         $wire.on('success', (e) => { successMessage = e.message || 'Berhasil!'; showSuccess = true; setTimeout(() => showSuccess = false, 3000); });
-         $wire.on('error', (e) => { errorMessage = e.message || 'Terjadi kesalahan!'; showError = true; setTimeout(() => showError = false, 5000); });
-     ">
-    <div x-show="showSuccess" x-cloak x-transition class="fixed top-4 right-4 z-50 max-w-sm">
-        <flux:callout variant="success" icon="check-circle"><span x-text="successMessage"></span></flux:callout>
-    </div>
-    <div x-show="showError" x-cloak x-transition class="fixed top-4 right-4 z-50 max-w-sm">
-        <flux:callout variant="danger" icon="x-circle"><span x-text="errorMessage"></span></flux:callout>
-    </div>
-
+<div class="flex h-full w-full flex-1 flex-col gap-6">
     <div>
         <flux:heading size="xl">Master Sektor Usaha</flux:heading>
         <flux:heading size="sm" class="mt-2 text-zinc-600 dark:text-zinc-400">
