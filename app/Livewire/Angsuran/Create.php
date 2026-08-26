@@ -34,6 +34,18 @@ class Create extends Component
 
         // Set default tanggal ke hari ini
         $this->tanggal_bayar = now()->format('Y-m-d');
+
+        // Prefill dari tombol "Bayar Angsuran" di halaman detail pinjaman
+        $pinjamanId = (int) request()->query('pinjaman');
+        if ($pinjamanId > 0) {
+            $adaDiDesa = Pinjaman::aktif()
+                ->where('id', $pinjamanId)
+                ->where('desa_id', Auth::user()->desa_id)
+                ->exists();
+            if ($adaDiDesa) {
+                $this->pinjaman_id = $pinjamanId;
+            }
+        }
     }
 
     public function updatedPokokDibayar(): void

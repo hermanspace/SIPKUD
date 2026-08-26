@@ -101,6 +101,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('unit-usaha', App\Livewire\MasterData\UnitUsaha\Index::class)->name('unit-usaha.index');
         Route::get('sektor-usaha', App\Livewire\MasterData\SektorUsaha\Index::class)->name('sektor-usaha.index');
         Route::get('pinjaman', App\Livewire\Pinjaman\Index::class)->name('pinjaman.index');
+        // whereNumber agar tidak menabrak route pinjaman/create di grup admin_desa
+        Route::get('pinjaman/{pinjaman}', App\Livewire\Pinjaman\Show::class)
+            ->whereNumber('pinjaman')->name('pinjaman.show');
         Route::get('angsuran', App\Livewire\Angsuran\Index::class)->name('angsuran.index');
 
         // Kas Harian
