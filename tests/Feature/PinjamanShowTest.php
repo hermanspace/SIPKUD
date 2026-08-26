@@ -85,3 +85,19 @@ it('tombol bayar membuka form angsuran dengan pinjaman terpilih', function () {
         ->test(Create::class)
         ->assertSet('pinjaman_id', $this->pinjaman->id);
 });
+
+it('field angsuran ke terisi otomatis urutan berikutnya saat pinjaman dipilih', function () {
+    // pinjaman sudah punya angsuran ke-1 dan ke-2 (beforeEach) -> berikutnya 3
+    Livewire\Livewire::actingAs($this->admin)
+        ->withQueryParams(['pinjaman' => $this->pinjaman->id])
+        ->test(Create::class)
+        ->assertSet('angsuran_ke', '3');
+
+    // ganti pilihan lewat dropdown juga mengisi ulang
+    Livewire\Livewire::actingAs($this->admin)
+        ->test(Create::class)
+        ->set('pinjaman_id', $this->pinjaman->id)
+        ->assertSet('angsuran_ke', '3')
+        ->set('pinjaman_id', null)
+        ->assertSet('angsuran_ke', '');
+});

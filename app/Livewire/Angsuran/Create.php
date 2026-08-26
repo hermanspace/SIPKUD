@@ -44,8 +44,32 @@ class Create extends Component
                 ->exists();
             if ($adaDiDesa) {
                 $this->pinjaman_id = $pinjamanId;
+                $this->isiAngsuranKeBerikutnya();
             }
         }
+    }
+
+    public function updatedPinjamanId(): void
+    {
+        $this->isiAngsuranKeBerikutnya();
+    }
+
+    /**
+     * Isi otomatis "Angsuran Ke" = angsuran terakhir yang tercatat + 1
+     * untuk pinjaman terpilih. Tetap bisa diubah manual oleh kasir.
+     */
+    private function isiAngsuranKeBerikutnya(): void
+    {
+        if (! $this->pinjaman_id) {
+            $this->angsuran_ke = '';
+
+            return;
+        }
+
+        $terakhir = (int) AngsuranPinjaman::where('pinjaman_id', $this->pinjaman_id)
+            ->max('angsuran_ke');
+
+        $this->angsuran_ke = (string) ($terakhir + 1);
     }
 
     public function updatedPokokDibayar(): void
